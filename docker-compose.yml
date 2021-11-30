@@ -1,0 +1,70 @@
+version: "3.8"
+services:
+  # mongodb:
+  #   image : mongo:latest
+  #   container_name: mongodb
+  #   hostname: my_mongo
+  #   environment:
+  #     - PUID=1000
+  #     - PGID=1000
+  #   networks:
+  #     - dans_network
+  #   volumes:
+  #     - /home/dan/mongodb/database:/data/db
+  #   ports:
+  #     - "27017:27017"
+  #   restart: unless-stopped
+  rabbitmq:
+    image: rabbitmq:3-management
+    hostname: my_rabbit
+    volumes:
+      - ./rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
+      - ./rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
+      #Note that these two local folders need to be ignored in Git.
+      - ./rabbitmq/data:/var/lib/rabbitmq/mnesia/rabbit@my-rabbit
+      - ./rabbitmq/logs:/var/log/rabbitmq/log
+    ports:
+      - 5673:5673
+      - 15672:15672
+    restart: unless-stopped
+    networks:
+      - dans_network
+  # minIO:
+  #   image:  minio/minio
+  #   container_name  : minIO
+  #   hostname: my_minio
+  #   environment: 
+  #     - "MINIO_ROOT_USER=joe"
+  #     - "MINIO_ROOT_PASSWORD=mamamama"
+  #   ports: 
+  #     - "9000:9000"
+  #   volumes:
+  #     - /home/dev/mdata:/data
+  #   command: server /data
+  #   networks:
+  #     - dans_network
+  #   restart: unless-stopped
+  
+  controller:
+   image: controller
+   container_name: controller
+   depends_on:
+      - rabbitmq
+  #  stdin_open: true # docker run -i
+  #  tty: true        # docker run -t
+   restart: unless-stopped
+   networks:
+    - dans_network
+
+  report_generartor:
+    image: rg
+    # build: './report_generator_service'
+    depends_on:
+      - rabbitmq
+    container_name: report_generator
+    restart: unless-stopped
+    networks:
+      - dans_network
+networks:
+  dans_network:
+    driver: bridge
