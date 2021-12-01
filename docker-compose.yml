@@ -16,7 +16,7 @@ services:
     depends_on:
       - rabbitmq
     restart: unless-stopped
-
+  
   rabbitmq:
     image: rabbitmq:3-management
     hostname: my_rabbit
@@ -62,13 +62,25 @@ services:
     - dans_network
 
   report_generartor:
-    image: rg
+    build: './report_generator_service'
     depends_on:
       - rabbitmq
     container_name: report_generator
     restart: unless-stopped
     networks:
       - dans_network
+  
+  mongo-express:
+    image: mongo-express
+    restart: always
+    ports:
+      - 8081:8081
+    depends_on:
+      - rabbitmq
+    networks: 
+      - dans_network
+    environment:
+      ME_CONFIG_MONGODB_URL: mongodb://my_mongo:27017/
 networks:
   dans_network:
     driver: bridge
