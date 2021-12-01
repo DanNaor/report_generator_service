@@ -1,19 +1,22 @@
 version: "3.8"
 services:
-  # mongodb:
-  #   image : mongo:latest
-  #   container_name: mongodb
-  #   hostname: my_mongo
-  #   environment:
-  #     - PUID=1000
-  #     - PGID=1000
-  #   networks:
-  #     - dans_network
-  #   volumes:
-  #     - /home/dan/mongodb/database:/data/db
-  #   ports:
-  #     - "27017:27017"
-  #   restart: unless-stopped
+  mongodb:
+    image : mongo:latest
+    container_name: mongodb
+    hostname: my_mongo
+    environment:
+      - PUID=1000
+      - PGID=1000
+    networks:
+      - dans_network
+    volumes:
+      - /home/dan/mongodb/database:/data/db
+    ports:
+      - "27017:27017"
+    depends_on:
+      - rabbitmq
+    restart: unless-stopped
+
   rabbitmq:
     image: rabbitmq:3-management
     hostname: my_rabbit
@@ -29,24 +32,26 @@ services:
     restart: unless-stopped
     networks:
       - dans_network
-  # minIO:
-  #   image:  minio/minio
-  #   container_name  : minIO
-  #   hostname: my_minio
-  #   environment: 
-  #     - "MINIO_ROOT_USER=joe"
-  #     - "MINIO_ROOT_PASSWORD=mamamama"
-  #   ports: 
-  #     - "9000:9000"
-  #   volumes:
-  #     - /home/dev/mdata:/data
-  #   command: server /data
-  #   networks:
-  #     - dans_network
-  #   restart: unless-stopped
+  minIO:
+    image:  minio/minio
+    container_name  : minIO
+    hostname: my_minio
+    environment: 
+      - "MINIO_ROOT_USER=joe"
+      - "MINIO_ROOT_PASSWORD=mamamama"
+    ports: 
+      - "9000:9000"
+    volumes:
+      - /home/dev/mdata:/data
+    depends_on:
+      - rabbitmq
+    command: server /data
+    networks:
+      - dans_network
+    restart: unless-stopped
   
   controller:
-   image: controller
+   build: './controller_service'
    container_name: controller
    depends_on:
       - rabbitmq
@@ -58,7 +63,6 @@ services:
 
   report_generartor:
     image: rg
-    # build: './report_generator_service'
     depends_on:
       - rabbitmq
     container_name: report_generator
