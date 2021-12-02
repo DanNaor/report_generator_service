@@ -9,8 +9,6 @@ services:
       - PGID=1000
     networks:
       - dans_network
-    volumes:
-      - /home/dan/mongodb/database:/data/db
     ports:
       - "27017:27017"
     depends_on:

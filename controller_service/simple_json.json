@@ -1,6 +1,5 @@
 
 {
-     	"_id": 42069,
      	"name": "Check if the signal Peer_Offer includes data item Peer_Type",
      	"result": "Pass/Fail"
 }
