@@ -10,7 +10,7 @@ connection = pika.BlockingConnection(
 channel = connection.channel() 
 logger.info("connected")
 channel.queue_declare(queue='controller2RGq')
-
+# need to add commnets!!!!!!!!! 
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='controller2RGq', on_message_callback=on_request)
 
