@@ -51,20 +51,29 @@ services:
   controller:
    build: './controller_service'
    container_name: controller
+  #  command: sh -c "/wait /controller.py"
    depends_on:
       - rabbitmq
+   environment:
+      WAIT_HOST: my_rabbit:5673
+
   #  stdin_open: true # docker run -i
   #  tty: true        # docker run -t
-   restart: unless-stopped
+  #  restart: unless-stopped
    networks:
     - dans_network
 
-  report_generartor:
+  report_generator:
+    # stdin_open: true
+    # tty: true
     build: './report_generator_service'
     depends_on:
-      - rabbitmq
+      - mongodb
     container_name: report_generator
-    restart: unless-stopped
+    environment:
+      WAIT_HOST:  my_mongo:27017
+    # restart: unless-stopped
+    # command: sh -c "/wait /report_generator.py"
     networks:
       - dans_network
   
@@ -75,6 +84,7 @@ services:
       - 8081:8081
     depends_on:
       - rabbitmq
+      - mongodb
     networks: 
       - dans_network
     environment:

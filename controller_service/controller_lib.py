@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 from pymongo import MongoClient, mongo_client
 import pika
 from minio import Minio

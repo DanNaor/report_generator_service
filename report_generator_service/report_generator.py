@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/local/bin/python
 from pymongo import MongoClient
 from minio import Minio
 from report_generator_lib import _setup_logger, on_request 

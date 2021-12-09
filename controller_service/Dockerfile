@@ -3,8 +3,13 @@ RUN pip install pika
 RUN pip install minio
 RUN pip install pymongo
 WORKDIR /app
-COPY  controller.py . 
-COPY  controller_lib.py .
-COPY simple_json.json .
-CMD ["controller.py"]
-ENTRYPOINT ["python"]                            
+ADD controller.py /app 
+ADD controller_lib.py /app
+ADD simple_json.json /app
+RUN chmod +x /app/controller.py
+RUN chmod +x /app/controller_lib.py
+ADD wait /app
+RUN chmod +x /app/wait
+CMD /app/wait && ./controller.py
+# CMD ["controller.py"]
+# ENTRYPOINT ["python"]                            

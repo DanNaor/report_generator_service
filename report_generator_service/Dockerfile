@@ -3,7 +3,12 @@ RUN pip install pika
 RUN pip install minio
 RUN pip install pymongo
 WORKDIR /app
-COPY report_generator_lib.py .
-COPY  report_generator.py . 
-CMD ["report_generator.py"]
-ENTRYPOINT ["python"]                            
+ADD report_generator_lib.py /app 
+ADD report_generator.py /app
+RUN chmod +x /app/report_generator.py
+RUN chmod +x /app/report_generator_lib.py
+ADD wait /app
+RUN chmod +x /app/wait
+CMD /app/wait && ./report_generator.py
+# CMD ["report_generator.py"]
+# ENTRYPOINT ["python"]                            
