@@ -5,7 +5,8 @@ RUN pip install pymongo
 WORKDIR /app
 ADD controller.py /app 
 ADD controller_lib.py /app
-ADD simple_json.json /app
+ADD rabbitmqhandler.py /app
+# ADD simple_json.json /app
 RUN chmod +x /app/controller.py
 RUN chmod +x /app/controller_lib.py
 ADD wait /app

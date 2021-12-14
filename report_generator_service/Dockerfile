@@ -2,6 +2,7 @@ FROM python:3.8-slim-buster
 RUN pip install pika
 RUN pip install minio
 RUN pip install pymongo
+RUN pip install pandas
 WORKDIR /app
 ADD report_generator_lib.py /app 
 ADD report_generator.py /app
