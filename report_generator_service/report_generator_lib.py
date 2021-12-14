@@ -19,7 +19,8 @@ def create_pdf_and_upload():
 
 
 
-def on_request(ch, method, props, body):
+def on_request(ch, method, props, body): 
+  if body!=None:
     logger.info("im in request")
     response =  create_pdf_and_upload()
     ch.basic_publish(exchange='',
