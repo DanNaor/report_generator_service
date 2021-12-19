@@ -13,7 +13,7 @@ def _setup_logger():
         logger.setLevel(logging.DEBUG)
         return logger
 def create_result_instruction():
-    return  RMQhendler.send_rpc('','pdfs','WORK!')
+    return  RMQhendler.request_pdf()
 # this class will create 2 q's between the report generator and the controller ,1 for telling the report genrator to create the report pdf and the other for notifing the controller.  
 # class create_result_instruction(object):
 #     def __init__(self):

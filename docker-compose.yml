@@ -5,8 +5,9 @@ services:
     container_name: mongodb
     hostname: my_mongo
     environment:
-      - PUID=1000
-      - PGID=1000
+     - MONGO_INITDB_ROOT_USERNAME=root
+     - MONGO_INITDB_ROOT_PASSWORD=example
+
     networks:
       - dans_network
     ports:
@@ -72,12 +73,13 @@ services:
       - rabbitmq
       - mongodb
    environment:
-     - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672
+     - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672 
      - RMQ_HOST=my_rabbit
      - MONGO_INITDB_ROOT_USERNAME=root
      - MONGO_INITDB_ROOT_PASSWORD=example
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=test_result
+     - DB_NAME=DB
+     - QUEUE_NAMES=updates,results,pdfs,setup_ready
    restart: on-failure
   #  stdin_open: true # docker run -i
   #  tty: true        # docker run -t
@@ -99,18 +101,28 @@ services:
     container_name: report_generator
     environment:
      - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672
+     - RMQ_HOST=my_rabbit
+     - MONGO_INITDB_ROOT_USERNAME=root
+     - MONGO_INITDB_ROOT_PASSWORD=example
+     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+     - DB_NAME=DB
+     - QUEUE_NAMES=pdfs
     restart: on-failure
     # command: sh -c "/wait /report_generator.py"
     networks:
       - dans_network
 
-  db_handler:
-    build: './db_handler'
+  insert_db:
+    build: './insert_db'
     environment:
      - WAIT_HOSTS=my_mongo:27017
+     - MONGO_INITDB_ROOT_USERNAME=root
+     - MONGO_INITDB_ROOT_PASSWORD=example
+     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+     - DB_NAME=DB
     networks:
       - dans_network
-    container_name: db_handler
+    container_name: insert_db
     
 
 
@@ -127,7 +139,10 @@ services:
     networks: 
       - dans_network
     environment:
-      ME_CONFIG_MONGODB_URL: mongodb://my_mongo:27017/
+     - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+     - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+     - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
+
 
 
 

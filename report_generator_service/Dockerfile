@@ -6,8 +6,9 @@ RUN pip install pandas
 WORKDIR /app
 ADD report_generator_lib.py /app 
 ADD report_generator.py /app
-RUN chmod +x /app/report_generator.py
-RUN chmod +x /app/report_generator_lib.py
+ADD mongo_handler.py /app
+# RUN chmod +x /app/report_generator.py
+# RUN chmod +x /app/report_generator_lib.py
 ADD wait /app
 RUN chmod +x /app/wait
 CMD /app/wait && ./report_generator.py

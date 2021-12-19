@@ -2,8 +2,8 @@
 from typing import Collection 
 from pymongo import MongoClient, mongo_client
 import json
-
-
+from json import dumps, loads
+from mongo_handler import MongodbHandler
 import logging
 def _setup_logger():    
         logger=logging.getLogger("db_handler")
@@ -11,13 +11,10 @@ def _setup_logger():
         logger.setLevel(logging.DEBUG)
         return logger
 logger=_setup_logger()
-
-mongo_client=MongoClient(host='my_mongo',port=27017)
-db=mongo_client["json_docs"]
-logger.info("uploading json file...")
-Collection_TestResult=db["TestResult"]
+Handler=MongodbHandler()
+logger.info("uploading json file....")
 with open('simple_json.json') as f:
     file_data = json.load(f)
-Collection_TestResult.insert_one(file_data)
+Handler.insert_document('test_result',file_data)
+# Collection_TestResult.insert_one(file_data)
 logger.info("json file uploaded")
-mongo_client.close()

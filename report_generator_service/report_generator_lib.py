@@ -5,7 +5,6 @@ import pika
 import logging
 # from bson.json_util import dumps  
 # import pandas
-
 def _setup_logger():    
         logger=logging.getLogger("report_generator")
         logger.addHandler(logging.StreamHandler())
@@ -13,9 +12,11 @@ def _setup_logger():
         return logger
 logger=_setup_logger()
 
+
+
+
 def create_pdf_and_upload():
    return "toker super gay"
-
 
 
 

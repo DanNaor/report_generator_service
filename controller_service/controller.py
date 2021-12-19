@@ -10,4 +10,4 @@ logger=_setup_logger()
 #telling RG to generate report
 logger.info("created request now im calling")
 response=create_result_instruction()
-logger.info(response)  
+logger.info(response.decode("utf-8"))  
