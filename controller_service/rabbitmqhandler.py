@@ -11,7 +11,7 @@ import uuid
 
 # for threading function
 from threading import Thread
-
+import time 
 class RabbitmqHandler:
     def __init__(self):
         self.queue_names = os.getenv('QUEUE_NAMES').split(',')

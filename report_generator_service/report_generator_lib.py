@@ -1,10 +1,16 @@
 #!/usr/local/bin/python
 # from pymongo import MongoClient
 # from minio import Minio
-import pika
-import logging
 # from bson.json_util import dumps  
 # import pandas
+from bson.json_util import dumps, loads
+import logging
+import shutil
+from fpdf import FPDF
+import pika
+from mongo_handler import *
+import os
+
 def _setup_logger():    
         logger=logging.getLogger("report_generator")
         logger.addHandler(logging.StreamHandler())
@@ -16,10 +22,29 @@ logger=_setup_logger()
 
 
 def create_pdf_and_upload():
-   return "toker super gay"
+  # get test result info from db
+   mongo_controller= MongodbHandler()
+   testlist=[]
+   for data in mongo_controller.get_all_documents("test_result"):
+     testlist.append(data)
+ #test list is a list that each cell holds a json string that represent a test
+  #  logger.info({"test-\n"}+testlist)
+   pdf = FPDF('P', 'mm', 'A4')
+   pdf.add_page()
+   pdf.set_font("Arial", size=14)
+   pdf.cell(200, 10, txt="vagina!", ln=1, align="L")
+   pdf.output("test_report.pdf")       
+  #  move pdf to volume
+   dst_folder="/app/pdfs"
+   src_folder ="/app"
+   file_name="test_report.pdf"
+   logger.info("reached pdf")
+   if os.path.isfile(file_name):
+      logger.info("reached pdf2")
+      shutil.move(src_folder +'/'+ file_name, dst_folder +'/'+ file_name)
 
 
-
+   
 def on_request(ch, method, props, body): 
   if body!=None:
     logger.info("im in request")

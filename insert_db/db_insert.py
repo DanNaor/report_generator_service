@@ -1,4 +1,5 @@
 #!/usr/local/bin/python
+# this container upload the simple json file to mongo
 from typing import Collection 
 from pymongo import MongoClient, mongo_client
 import json

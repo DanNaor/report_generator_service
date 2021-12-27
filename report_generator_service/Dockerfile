@@ -3,7 +3,9 @@ RUN pip install pika
 RUN pip install minio
 RUN pip install pymongo
 RUN pip install pandas
+RUN pip install fpdf
 WORKDIR /app
+RUN mkdir pdfs
 ADD report_generator_lib.py /app 
 ADD report_generator.py /app
 ADD mongo_handler.py /app

@@ -80,6 +80,7 @@ services:
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
      - DB_NAME=DB
      - QUEUE_NAMES=updates,results,pdfs,setup_ready
+     - WAIT_BEFORE=10
    restart: on-failure
   #  stdin_open: true # docker run -i
   #  tty: true        # docker run -t
@@ -99,6 +100,9 @@ services:
       - mongodb
       - rabbitmq
     container_name: report_generator
+    # only for displaying the pdf in the filesystem delete when done with dev
+    volumes:
+      - /home/dan/report_generator/report_generator_service:/app/pdfs
     environment:
      - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672
      - RMQ_HOST=my_rabbit
