@@ -29,22 +29,24 @@ def create_pdf_and_upload():
      testlist.append(data)
  #test list is a list that each cell holds a json string that represent a test
   #  logger.info({"test-\n"}+testlist)
-   pdf = FPDF('P', 'mm', 'A4')
+   my_lst_str = ''.join(map(str, testlist))
+   logger.info("creating pdf...")
+   pdf = PDF()
    pdf.add_page()
    pdf.set_font("Arial", size=14)
-   pdf.cell(200, 10, txt="vagina!", ln=1, align="L")
-   pdf.output("test_report.pdf")       
+  
+  #  pdf.multi_cell(0, 10, txt=my_lst_str,align="L")
+   pdf.output("test_report.pdf") 
+   logger.info("created pdf!")      
   #  move pdf to volume
    dst_folder="/app/pdfs"
    src_folder ="/app"
    file_name="test_report.pdf"
-   logger.info("reached pdf")
    if os.path.isfile(file_name):
-      logger.info("reached pdf2")
-      shutil.move(src_folder +'/'+ file_name, dst_folder +'/'+ file_name)
+      return shutil.move(src_folder +'/'+ file_name, dst_folder +'/'+ file_name)
+      
 
-
-   
+  
 def on_request(ch, method, props, body): 
   if body!=None:
     logger.info("im in request")
@@ -55,3 +57,16 @@ def on_request(ch, method, props, body):
     props.correlation_id),
     body=str(response))
     ch.basic_ack(delivery_tag=method.delivery_tag)
+
+class PDF(FPDF):
+    def header(self):
+        # Logo
+        self.image('Hatal_logo.png', 10, 8, 33)
+        # Arial bold 15
+        self.set_font('Arial', 'B', 15)
+        # Move to the right
+        self.cell(80)
+        # Title
+        self.cell(30, 10, 'Results', 1, 0, 'C')
+        # Line break
+        self.ln(20)

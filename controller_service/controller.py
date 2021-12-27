@@ -8,7 +8,7 @@ from minio import Minio
 # logger for showing data flow 
 logger=_setup_logger()
 #telling RG to generate report
-
+logger.info("calling...")
 response=create_result_instruction()
-logger.info("created request now im calling")
-logger.info(response.decode("utf-8"))  
+logger.info("called waiting for response...")
+logger.info("response-\n"+response.decode("utf-8"))  

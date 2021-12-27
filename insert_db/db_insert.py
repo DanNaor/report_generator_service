@@ -1,5 +1,5 @@
 #!/usr/local/bin/python
-# this container upload the simple json file to mongo
+# this container upload the json files to mongo
 from typing import Collection 
 from pymongo import MongoClient, mongo_client
 import json
@@ -13,9 +13,15 @@ def _setup_logger():
         return logger
 logger=_setup_logger()
 Handler=MongodbHandler()
-logger.info("uploading json file....")
+logger.info("uploading simple json file....")
 with open('simple_json.json') as f:
     file_data = json.load(f)
 Handler.insert_document('test_result',file_data)
-# Collection_TestResult.insert_one(file_data)
-logger.info("json file uploaded")
+
+logger.info("uploading simple config file....")
+with open('Global _test_configuration.json') as f:
+    file_data = json.load(f)
+Handler.insert_document('global_config',file_data)
+
+
+logger.info("json files uploaded")

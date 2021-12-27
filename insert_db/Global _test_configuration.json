@@ -1,0 +1,14 @@
+{
+	
+	"ConfigType": "TestConfig",
+	"RadioType": "NNN",
+	"TesterName": "John Doe",
+	"TestReason": "New version release",
+	"TestDescription": "Client tests for new verision",
+	"SelectedDevice": "device name",
+	"TimeStamp": "26-04-2021 14:15:16.297",
+	"SuitesToRun": [
+		"dlep/dlep-8175.tdf",
+		"dlep/dlep-8703.tdf"
+	]
+}

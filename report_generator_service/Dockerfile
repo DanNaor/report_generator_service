@@ -9,6 +9,7 @@ RUN mkdir pdfs
 ADD report_generator_lib.py /app 
 ADD report_generator.py /app
 ADD mongo_handler.py /app
+ADD Hatal_logo.png /app
 # RUN chmod +x /app/report_generator.py
 # RUN chmod +x /app/report_generator_lib.py
 ADD wait /app

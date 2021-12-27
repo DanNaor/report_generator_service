@@ -80,7 +80,7 @@ services:
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
      - DB_NAME=DB
      - QUEUE_NAMES=updates,results,pdfs,setup_ready
-     - WAIT_BEFORE=10
+     - WAIT_BEFORE=15
    restart: on-failure
   #  stdin_open: true # docker run -i
   #  tty: true        # docker run -t
