@@ -38,7 +38,10 @@ class MongodbHandler:
 
     def get_all_documents(self, collection_name):
         return self.get_collection(collection_name).find()
-
+    
+    def get_jsonOBJ(self, collection_name):
+        return self.get_collection(collection_name).find_one({})
+    
     # function gets documents from get_documents or get_all_documents
     def print_documents(self, documents):
         for document in documents: 
@@ -52,7 +55,7 @@ class MongodbHandler:
         collection = self.db[collection_name]
         collection.insert_many(documents)
 
-
+    
 class MyPrettyPrinter(pprint.PrettyPrinter):
     def format(self, object, context, maxlevels, level):
         if isinstance(object, unicode):
