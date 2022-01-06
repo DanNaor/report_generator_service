@@ -9,9 +9,7 @@ connection = pika.BlockingConnection(
 channel = connection.channel() 
 logger.info("connected")
 channel.queue_declare(queue='pdfs')
-# need to add commnets!!!!!!!!! 
 channel.basic_qos(prefetch_count=1)
-logger.info("waiting for contoller.... 10 sec be patiant(:")
 channel.basic_consume(queue='pdfs', on_message_callback=on_request)
-
+logger.info("waiting for contoller.... 15 sec be patiant(:")
 channel.start_consuming()

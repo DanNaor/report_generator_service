@@ -35,11 +35,20 @@ def create_pdf_and_upload():
    pdf.cell(30, 10, 'Configuration', 0, 0, 'C')
    pdf.line(0,0,pdf.line_width,0)
    pdf.ln(15)
+   # Remember to always put one of these at least once.
+   pdf.set_font('Courier','',10.0) 
+   # Effective page width, or just epw
+   epw = pdf.w - 2*pdf.l_margin
+   # Set column width to 1/4 of effective page width to distribute content 
+   # evenly across table and page
+   col_width = epw/2
+ 
+   th = pdf.font_size
   # iterating throught the json file to display the data in the pdf file ,skipping the first field (id)
-   for value in islice(config_data_json,1,None):
-     pdf.cell(14, h = 6, txt =  re.sub(r"(\w)([A-Z])", r"\1 \2", str(value))  +'-'+'\t'+str(config_data_json[value]), border = 0, ln = 30, 
-     align = '', fill = False, link = '')
-     pdf.ln(5)
+   for row in islice(config_data_json,1,None):
+     pdf.cell(col_width, th, txt =  str(row), border = 1, )
+     pdf.cell(col_width, th, txt =  str(config_data_json[row]), border = 1, )
+     pdf.ln(th)
 
   # tests page
    pdf.add_page()
@@ -55,15 +64,40 @@ def create_pdf_and_upload():
       pdf.cell(14, h = 6, txt =  re.sub(r"(\w)([A-Z])", r"\1 \2", str(value))  +'-'+'\t'+str(dic[value]), border = 0, ln = 30, 
      align = '', fill = False, link = '')
      pdf.ln(5)
+   pdf.add_page()
+   pdf.ln(20)
+   pdf.cell(80)
+   pdf.image('toker_is_a_baddy.png', 60,70, 100)
+
   # creating the pdf
    pdf.output("test_report.pdf") 
    logger.info("created pdf!")
-   
+   logger.info("uploading file to MinIO...")
+   # creating a client to have CRUD function with minio
    MinIOclient= getMinoClient()
-   if(not MinIOclient.bucket_exists('pdf_bucket')):
-     MinIOclient.make_bucket('pdf_bucket')
+   # creating a bucket 
+   if(not MinIOclient.bucket_exists('pdfbucket')):
+     MinIOclient.make_bucket('pdfbucket')
+   # getting the pdfs path
    path= move_pdf_2_volume()
- 
+   try:
+     # getting pdf from container filerstream
+    with open(path,'rb') as pdf_file:
+      # getting file size
+       statdata= os.stat(path)
+       # adding file to bucket
+       MinIOclient.put_object(
+         'pdfbucket',
+         'test_report.pdf',
+         pdf_file,
+         statdata.st_size
+       )
+   except logging.exception as indentifier:
+       return "):"
+   logger.info("uploaded file to MinIO")
+   return "(:"
+
+
 def on_request(ch, method, props, body): 
   if body!=None:
     logger.info("im in request")
@@ -92,7 +126,7 @@ def getMinoClient():
     return Minio(
       "my_minio:9000",
       access_key=os.getenv('MINIO_ROOT_USER'),
-      secret_key=os.getenv('MINIO_ROOT_USER'),
+      secret_key=os.getenv('MINIO_ROOT_PASSWORD'),
       secure=False
     )
 
