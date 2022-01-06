@@ -111,6 +111,8 @@ services:
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
      - DB_NAME=DB
      - QUEUE_NAMES=pdfs
+     - "MINIO_ROOT_USER=joe"
+     - "MINIO_ROOT_PASSWORD=mamamama"
     restart: on-failure
     # command: sh -c "/wait /report_generator.py"
     networks:

@@ -2,6 +2,7 @@ from json import encoder
 from pymongo import MongoClient
 import pprint
 import os
+from bson.json_util import loads, dumps     
 
 class MongodbHandler:
     def __init__(self):
@@ -35,12 +36,19 @@ class MongodbHandler:
     # for more examples of querying in pymongo see https://www.analyticsvidhya.com/blog/2020/08/query-a-mongodb-database-using-pymongo/
     def get_documents(self, collection_name, field, value):
         return self.get_collection(collection_name).find({field : value})
-
+    # returns a Cursor
     def get_all_documents(self, collection_name):
         return self.get_collection(collection_name).find()
     
+    # returns list of dic, each dic holds a json object
+    def get_all_documents_in_list(self,collection_name):
+        return list(self.get_collection(collection_name).find())
+    def get_find_one(self, collection_name):
+        return self.get_collection(collection_name).find_one()
     def get_jsonOBJ(self, collection_name):
-        return self.get_collection(collection_name).find_one({})
+     results=self.get_all_documents(collection_name)
+     json_obj=[dumps(result, separators=(',', ':')) for result in results]
+     return json_obj
     
     # function gets documents from get_documents or get_all_documents
     def print_documents(self, documents):
