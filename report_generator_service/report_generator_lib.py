@@ -32,7 +32,7 @@ def create_pdf_and_upload():
   #  config page
    pdf.add_page()
    pdf.cell(80)
-   pdf.cell(30, 10, 'Configuration', 0, 0, 'C')
+   pdf.cell(50, 10, 'Configuration', 1, 0, 'C')
    pdf.line(0,0,pdf.line_width,0)
    pdf.ln(15)
    # Remember to always put one of these at least once.
@@ -41,23 +41,27 @@ def create_pdf_and_upload():
    epw = pdf.w - 2*pdf.l_margin
    # Set column width to 1/4 of effective page width to distribute content 
    # evenly across table and page
-   col_width = epw/2
+   col_width = epw/3
  
    th = pdf.font_size
   # iterating throught the json file to display the data in the pdf file ,skipping the first field (id)
    for row in islice(config_data_json,1,None):
-     pdf.cell(col_width, th, txt =  str(row), border = 1, )
-     pdf.cell(col_width, th, txt =  str(config_data_json[row]), border = 1, )
-     pdf.ln(th)
+     pdf.set_font('Arial','I',12)
+     pdf.cell(col_width, th, txt =  str(row), border = 0, )
+     pdf.set_font('Courier','',10.0) 
+     pdf.cell(col_width, th, txt =  str(config_data_json[row]), border = 0, )
+     pdf.ln(2*th)
 
   # tests page
    pdf.add_page()
    # moving title to the middle of the file
    pdf.cell(80)
    # displaying title 
-   pdf.cell(20,20,txt="Tests-")
+   pdf.set_font('Arial', 'B', 15)
+   pdf.cell(30, 10, 'Tests-', 1, 0, 'C')
    pdf.ln(10)
    #iterating throught the list and displaying the test separately with space between them
+   pdf.set_font('Courier','',10.0) 
    for dic in test_result_list:
      pdf.ln(10)
      for value in islice(dic,1,None):
