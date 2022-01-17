@@ -32,7 +32,7 @@ def create_pdf_and_upload():
   #  config page
    pdf.add_page()
    pdf.cell(80)
-   pdf.cell(50, 10, 'Configuration', 1, 0, 'C')
+   pdf.cell(50, 10, 'Configuration-', 1, 0, 'C')
    pdf.line(0,0,pdf.line_width,0)
    pdf.ln(15)
    # Remember to always put one of these at least once.
@@ -68,10 +68,10 @@ def create_pdf_and_upload():
       pdf.cell(14, h = 6, txt =  re.sub(r"(\w)([A-Z])", r"\1 \2", str(value))  +'-'+'\t'+str(dic[value]), border = 0, ln = 30, 
      align = '', fill = False, link = '')
      pdf.ln(5)
-   pdf.add_page()
-   pdf.ln(20)
-   pdf.cell(80)
-   pdf.image('toker_is_a_baddy.png', 60,70, 100)
+  #  pdf.add_page()
+  #  pdf.ln(20)
+  #  pdf.cell(80)
+  #  pdf.image('toker_is_a_baddy.png', 60,70, 100)
 
   # creating the pdf
    pdf.output("test_report.pdf") 
@@ -97,9 +97,9 @@ def create_pdf_and_upload():
          statdata.st_size
        )
    except logging.exception as indentifier:
-       return "):"
+       return "):"+ path
    logger.info("uploaded file to MinIO")
-   return "(:"
+   return "(:"+path
 
 
 def on_request(ch, method, props, body): 
@@ -119,11 +119,6 @@ class PDF(FPDF):
         self.image('Hatal_logo.png', 10, 8, 33)
         # Arial bold 15
         self.set_font('Arial', 'B', 15)
-        # Move to the right
-        self.cell(80)
-        # Title
-        self.cell(30, 10, 'Results', 1, 0, 'C')
-        # Line break
         self.ln(35)
 
 def getMinoClient():

@@ -102,7 +102,7 @@ services:
     container_name: report_generator
     # only for displaying the pdf in the filesystem delete when done with dev
     volumes:
-      - /home/dan/report_generator/report_generator_service:/app/pdfs
+      - /home/dan/report_generator_service:/app/pdfs
     environment:
      - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672
      - RMQ_HOST=my_rabbit
@@ -114,13 +114,18 @@ services:
      - "MINIO_ROOT_USER=joe"
      - "MINIO_ROOT_PASSWORD=mamamama"
     restart: on-failure
-    # command: sh -c "/wait /report_generator.py"
     networks:
       - dans_network
 
+
+
+
+
+
+
   insert_db:
     build: './insert_db'
-    environment:
+    environment:        
      - WAIT_HOSTS=my_mongo:27017
      - MONGO_INITDB_ROOT_USERNAME=root
      - MONGO_INITDB_ROOT_PASSWORD=example
