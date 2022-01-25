@@ -23,8 +23,8 @@ logger=_setup_logger()
 def create_pdf_and_upload():
   # get info from db
    mongo_controller= MongodbHandler()
-  #  the configuration data is a single json doc there for config_data_json will hold a single json doc which hold the data about the global configuration 
-   config_data_json=mongo_controller.get_find_one("global_config") 
+  #  get the global config data as as a json doc(quary by a key name )
+   config_data_json=mongo_controller.get_documents("config","ConfigType", "$exists: <boolean>" ) 
    #get_all_documents_in_list retruns a list of dic that each dic represent a json document (Test)
    test_result_list= mongo_controller.get_all_documents_in_list("test_result")
    logger.info("creating pdf...")
@@ -99,7 +99,8 @@ def create_pdf_and_upload():
    except logging.exception as indentifier:
        return "):"+ path
    logger.info("uploaded file to MinIO")
-   return "(:"+path
+   logger.info(MinIOclient.get_presigned_url("GET","pdfbucket","test_report.pdf"))
+   return MinIOclient.get_presigned_url("GET","pdfbucket","test_report.pdf")
 
 
 def on_request(ch, method, props, body): 
@@ -123,7 +124,7 @@ class PDF(FPDF):
 
 def getMinoClient():
     return Minio(
-      "my_minio:9000",
+      ""+os.getenv("MINIO_HOSTNAME")+":9000",
       access_key=os.getenv('MINIO_ROOT_USER'),
       secret_key=os.getenv('MINIO_ROOT_PASSWORD'),
       secure=False

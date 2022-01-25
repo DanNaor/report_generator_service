@@ -26,7 +26,7 @@ Handler.insert_document('test_result',file_data)
 logger.info("uploading simple config file....")
 with open('global_test_config.json') as f:
     file_data = json.load(f)
-Handler.insert_document('global_config',file_data)
+Handler.insert_document('config',file_data)
 
 
 logger.info("json files uploaded")
