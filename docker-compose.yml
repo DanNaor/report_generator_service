@@ -23,7 +23,7 @@ services:
 
   rabbitmq:
     image: rabbitmq:3-management
-    hostname: my_rabbit
+    hostname: rabbitmq
     volumes:
       - ./rabbitmq/etc/definitions.json:/etc/rabbitmq/definitions.json
       - ./rabbitmq/etc/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
@@ -83,8 +83,8 @@ services:
       - rabbitmq
       - mongodb
    environment:
-     - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672 
-     - RMQ_HOST=my_rabbit
+     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672 
+     - RMQ_HOST=rabbitmq
      - MONGO_INITDB_ROOT_USERNAME=root
      - MONGO_INITDB_ROOT_PASSWORD=example
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
@@ -114,8 +114,8 @@ services:
     #   - /home/dan/report_generator_service:/app/pdfs
     environment:
      - MINIO_HOSTNAME=my_minio
-     - WAIT_HOSTS=my_mongo:27017,my_rabbit:5672
-     - RMQ_HOST=my_rabbit
+     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+     - RMQ_HOST=rabbitmq
      - MONGO_INITDB_ROOT_USERNAME=root
      - MONGO_INITDB_ROOT_PASSWORD=example
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
