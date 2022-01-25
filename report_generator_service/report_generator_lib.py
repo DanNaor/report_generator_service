@@ -24,9 +24,9 @@ def create_pdf_and_upload():
   # get info from db
    mongo_controller= MongodbHandler()
   #  get the global config data as as a json doc(quary by a key name )
-   config_data_json=mongo_controller.get_documents("config","ConfigType", "$exists: <boolean>" ) 
+   config_data_json=mongo_controller.get_documents("Configuration","ConfigType", "$exists: <boolean>" ) 
    #get_all_documents_in_list retruns a list of dic that each dic represent a json document (Test)
-   test_result_list= mongo_controller.get_all_documents_in_list("test_result")
+   test_result_list= mongo_controller.get_all_documents_in_list("Test Results")
    logger.info("creating pdf...")
    pdf = PDF()
   #  config page
@@ -124,7 +124,7 @@ class PDF(FPDF):
 
 def getMinoClient():
     return Minio(
-      ""+os.getenv("MINIO_HOSTNAME")+":9000",
+      ""+str(os.getenv("MINIO_HOSTNAME"))+":9000",
       access_key=os.getenv('MINIO_ROOT_USER'),
       secret_key=os.getenv('MINIO_ROOT_PASSWORD'),
       secure=False
