@@ -80,10 +80,11 @@ def create_pdf_and_upload():
    # creating a client to have CRUD function with minio
    MinIOclient= getMinoClient()
    # creating a bucket 
+  
    if(not MinIOclient.bucket_exists('pdfbucket')):
      MinIOclient.make_bucket('pdfbucket')
    # getting the pdfs path
-   path= move_pdf_2_volume()
+   path= move_pdf_2_volume()   
    try:
      # getting pdf from container filerstream
     with open(path,'rb') as pdf_file:
@@ -101,7 +102,7 @@ def create_pdf_and_upload():
    logger.info("uploaded file to MinIO")
    logger.info(MinIOclient.get_presigned_url("GET","pdfbucket","test_report.pdf"))
    return MinIOclient.get_presigned_url("GET","pdfbucket","test_report.pdf")
-
+  
 
 def on_request(ch, method, props, body): 
   if body!=None:
@@ -127,7 +128,8 @@ def getMinoClient():
       ""+str(os.getenv("MINIO_HOSTNAME"))+":9000",
       access_key=os.getenv('MINIO_ROOT_USER'),
       secret_key=os.getenv('MINIO_ROOT_PASSWORD'),
-      secure=False
+      secure=False,
+      region="eu-east-1"
     )
 
 def move_pdf_2_volume():

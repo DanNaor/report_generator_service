@@ -57,8 +57,8 @@ services:
     container_name  : minIO
     hostname: my_minio
     environment:
-      - "MINIO_ROOT_USER=user"
-      - "MINIO_ROOT_PASSWORD=password"
+      - MINIO_ROOT_USER=user
+      - MINIO_ROOT_PASSWORD=password
     expose:
       - 9001
       - 9000
@@ -103,8 +103,8 @@ services:
 
 
   report_generator:
-    build: './report_generator_service'
-    # image: dannaor/report_generator:0.0.1
+    # build: './report_generator_service'
+    image: dannaor/report_generator:0.0.1
     depends_on:
       - mongodb
       - rabbitmq
@@ -121,8 +121,8 @@ services:
      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
      - DB_NAME=DB
      - QUEUE_NAMES=pdfs
-     - "MINIO_ROOT_USER=user"
-     - "MINIO_ROOT_PASSWORD=password"
+     - MINIO_ROOT_USER=user
+     - MINIO_ROOT_PASSWORD=password
     restart: on-failure
     networks:
       - lan

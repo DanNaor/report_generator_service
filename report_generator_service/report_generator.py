@@ -4,11 +4,14 @@ from minio import Minio
 from report_generator_lib import logger, on_request 
 import pika
 import os
+
 logger.info("connecting server...")
 connection = pika.BlockingConnection(
     pika.ConnectionParameters(host=os.getenv("RMQ_HOST")))
-channel = connection.channel() 
+channel = connection.channel()
+logger.info("working!good") 
 logger.info("connected")
+logger.info("working!good")
 channel.queue_declare(queue='pdfs')
 channel.basic_qos(prefetch_count=1)
 channel.basic_consume(queue='pdfs', on_message_callback=on_request)
