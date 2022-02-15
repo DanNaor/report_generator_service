@@ -11,7 +11,6 @@ import pika
 from mongo_handler import *
 import os
 from bson.json_util import loads, dumps
-from itertools import islice
 from minio import Minio
 def _setup_logger():    
         logger=logging.getLogger("report_generator")
@@ -23,8 +22,9 @@ logger=_setup_logger()
 def create_pdf_and_upload():
   # get info from db
    mongo_controller= MongodbHandler()
-  #  get the global config data as as a json doc(quary by a key name )
-   config_data_json=mongo_controller.get_documents("Configuration","ConfigType", "$exists: <boolean>" ) 
+  #  get the global config data as as a dic(quary by a key name )
+   test_config_json= mongo_controller.get_find_one("Configuration",'ConfigType','TestConfig')
+   logger.info(test_config_json)
    #get_all_documents_in_list retruns a list of dic that each dic represent a json document (Test)
    test_result_list= mongo_controller.get_all_documents_in_list("Test Results")
    logger.info("creating pdf...")
@@ -42,15 +42,17 @@ def create_pdf_and_upload():
    # Set column width to 1/4 of effective page width to distribute content 
    # evenly across table and page
    col_width = epw/3
- 
    th = pdf.font_size
   # iterating throught the json file to display the data in the pdf file ,skipping the first field (id)
-   for row in islice(config_data_json,1,None):
+   for row in test_config_json: 
      pdf.set_font('Arial','I',12)
      pdf.cell(col_width, th, txt =  str(row), border = 0, )
+     logger.info(row)
      pdf.set_font('Courier','',10.0) 
-     pdf.cell(col_width, th, txt =  str(config_data_json[row]), border = 0, )
+     pdf.cell(col_width, th, txt =  str(test_config_json[row]), border = 0, )
      pdf.ln(2*th)
+   # islice(test_config_json,1,None)
+
 
   # tests page
    pdf.add_page()
@@ -64,7 +66,7 @@ def create_pdf_and_upload():
    pdf.set_font('Courier','',10.0) 
    for dic in test_result_list:
      pdf.ln(10)
-     for value in islice(dic,1,None):
+     for value in dic:
       pdf.cell(14, h = 6, txt =  re.sub(r"(\w)([A-Z])", r"\1 \2", str(value))  +'-'+'\t'+str(dic[value]), border = 0, ln = 30, 
      align = '', fill = False, link = '')
      pdf.ln(5)

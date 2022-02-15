@@ -32,19 +32,20 @@ class MongodbHandler:
             return collection
         return None
 
-    # returns documents by given field and value
+    #returns a cursor with the specific field and values without the id field
     # for more examples of querying in pymongo see https://www.analyticsvidhya.com/blog/2020/08/query-a-mongodb-database-using-pymongo/
     def get_documents(self, collection_name, field, value):
-        return self.get_collection(collection_name).find({field : value})
-    # returns a Cursor
+        return self.get_collection(collection_name).find({field : value},{"_id":0})
+    # returns a Cursor without the id field
     def get_all_documents(self, collection_name):
-        return self.get_collection(collection_name).find()
+        return self.get_collection(collection_name).find({},{"_id":0})
     
     # returns list of dic, each dic holds a json object
     def get_all_documents_in_list(self,collection_name):
-        return list(self.get_collection(collection_name).find())
-    def get_find_one(self, collection_name):
-        return self.get_collection(collection_name).find_one()
+        return list(self.get_collection(collection_name).find({},{"_id":0}))
+        #returns a dic with the specific field and values without the id field
+    def get_find_one(self, collection_name,field,value  ):
+        return self.get_collection(collection_name).find_one({field : value},{"_id":0})
     def get_jsonOBJ(self, collection_name):
      results=self.get_all_documents(collection_name)
      json_obj=[dumps(result, separators=(',', ':')) for result in results]
