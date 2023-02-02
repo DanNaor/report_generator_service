@@ -24,7 +24,6 @@ def create_pdf_and_upload():
    mongo_controller= MongodbHandler()
   #  get the global config data as as a dic(quary by a key name )
    test_config_json= mongo_controller.get_find_one("Configuration",'ConfigType','TestConfig')
-   logger.info(test_config_json)
    #get_all_documents_in_list retruns a list of dic that each dic represent a json document (Test)
    test_result_list= mongo_controller.get_all_documents_in_list("Test Results")
    logger.info("creating pdf...")
@@ -47,7 +46,6 @@ def create_pdf_and_upload():
    for row in test_config_json: 
      pdf.set_font('Arial','I',12)
      pdf.cell(col_width, th, txt =  str(row), border = 0, )
-     logger.info(row)
      pdf.set_font('Courier','',10.0) 
      pdf.cell(col_width, th, txt =  str(test_config_json[row]), border = 0, )
      pdf.ln(2*th)
@@ -82,7 +80,8 @@ def create_pdf_and_upload():
    # creating a client to have CRUD function with minio
    MinIOclient= getMinoClient()
    # creating a bucket 
-  
+   return move_pdf_2_volume()   
+
    if(not MinIOclient.bucket_exists('pdfbucket')):
      MinIOclient.make_bucket('pdfbucket')
    # getting the pdfs path

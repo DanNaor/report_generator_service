@@ -1,13 +1,10 @@
 #!/usr/local/bin/python
-from pymongo import MongoClient
-from minio import Minio
 from report_generator_lib import logger, on_request 
 import pika
 import os
 
 logger.info("connecting server...")
-connection = pika.BlockingConnection(
-    pika.ConnectionParameters(host=os.getenv("RMQ_HOST")))
+connection = pika.BlockingConnection(pika.ConnectionParameters(host=os.getenv("RMQ_HOST")))
 channel = connection.channel()
 logger.info("connected")
 channel.queue_declare(queue='pdfs')

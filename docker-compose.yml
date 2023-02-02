@@ -1,12 +1,12 @@
 version: "3.8"
 services:
   mongodb:
-    image : mongo:latest
+    image: mongo:latest
     container_name: mongodb
     hostname: my_mongo
     environment:
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
 
     networks:
       - lan
@@ -15,11 +15,6 @@ services:
     depends_on:
       - rabbitmq
     restart: unless-stopped
-  
-
-
-
-
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -37,9 +32,7 @@ services:
     networks:
       - lan
 
-
-
-# not sure if needed 
+  # not sure if needed 
   # nginx:
   #   image: nginx:1.19.2-alpine
   #   hostname: nginx
@@ -53,8 +46,8 @@ services:
 
 
   minIO:
-    image:  minio/minio
-    container_name  : minIO
+    image: minio/minio
+    container_name: minIO
     hostname: my_minio
     environment:
       - MINIO_ROOT_USER=user
@@ -70,84 +63,68 @@ services:
     networks:
       - lan
     restart: unless-stopped
-  
-
-
-
 
   controller:
-   build: './controller_service'
-   container_name: controller
-  #  command: sh -c "/wait /controller.py"
-   depends_on:
+    build: './controller_service'
+    container_name: controller
+    #  command: sh -c "/wait /controller.py"
+    depends_on:
       - rabbitmq
       - mongodb
-   environment:
-     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672 
-     - RMQ_HOST=rabbitmq
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
-     - QUEUE_NAMES=updates,results,pdfs,setup_ready
-     - WAIT_BEFORE=15
-   restart: on-failure
-  #  stdin_open: true # docker run -i
-  #  tty: true        # docker run -t
-  #  restart: unless-stopped
-   networks:
-    - lan
-
-
-
-
+    environment:
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+      - RMQ_HOST=rabbitmq
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
+      - QUEUE_NAMES=updates,results,pdfs,setup_ready
+      - WAIT_BEFORE=15
+    restart: on-failure
+    #  stdin_open: true # docker run -i
+    #  tty: true        # docker run -t
+    #  restart: unless-stopped
+    networks:
+      - lan
 
   report_generator:
-    # build: './report_generator_service'
-    image: dannaor/report_generator:0.0.1
+    build: './report_generator_service'
+    # image: dannaor/report_generator:0.0.1
     depends_on:
       - mongodb
       - rabbitmq
     container_name: report_generator
     # # only for displaying the pdf in the filesystem delete when done with dev
-    # volumes:
-    #   - /home/dan/report_generator_service:/app/pdfs
+    volumes:
+      - /home/dan/report_generator_service:/app/pdfs
     environment:
-     - MINIO_HOSTNAME=my_minio
-     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
-     - RMQ_HOST=rabbitmq
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
-     - QUEUE_NAMES=pdfs
-     - MINIO_ROOT_USER=user
-     - MINIO_ROOT_PASSWORD=password
+      - MINIO_HOSTNAME=my_minio
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+      - RMQ_HOST=rabbitmq
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
+      - QUEUE_NAMES=pdfs
+      - MINIO_ROOT_USER=user
+      - MINIO_ROOT_PASSWORD=password
+      # - WAIT_BEFORE=15
+
     restart: on-failure
     networks:
       - lan
 
-
-
-
-
-
-
   insert_db:
     build: './insert_db'
-    environment:        
-     - WAIT_HOSTS=my_mongo:27017
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
+    environment:
+      - WAIT_HOSTS=my_mongo:27017
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
     networks:
       - lan
     container_name: insert_db
-    
-
-
-
 
   mongo-express:
     image: mongo-express
@@ -157,18 +134,19 @@ services:
     depends_on:
       - rabbitmq
       - mongodb
-    networks: 
+    networks:
       - lan
     environment:
-     - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-     - ME_CONFIG_MONGODB_ADMINPASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
-
-
-
-
-
-
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:8080
 networks:
   lan:
     driver: bridge
