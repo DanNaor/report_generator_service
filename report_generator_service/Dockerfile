@@ -9,6 +9,7 @@ ADD report_generator_lib.py /app
 ADD report_generator.py /app
 ADD mongo_handler.py /app
 ADD Hatal_logo.png /app
+ADD toker_is_a_baddy.png /app
 ADD wait /app
 RUN chmod +x /app/wait
 CMD /app/wait && ./report_generator.py
