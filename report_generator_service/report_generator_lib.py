@@ -3,16 +3,15 @@
 # from minio import Minio
 # from bson.json_util import dumps
 # import pandas
-import re
 import logging
-import shutil
-from fpdf import FPDF
-import pika
-from mongo_handler import *
 import os
-from bson.json_util import loads, dumps
-from minio import Minio
-from bson.json_util import loads, dumps
+import shutil
+import requests
+
+import pika
+from bson.json_util import dumps, loads
+from fpdf import FPDF
+from mongo_handler import *
 
 
 def _setup_logger():
@@ -34,13 +33,13 @@ def create_pdf_and_upload():
     # get_all_documents_in_list retruns a list of dic that each dic represent a json document (Test)
     test_result_list = mongo_controller.get_all_documents_in_list(
         "TestResults")
-    
-    SortedTestResults =mongo_controller.get_jsonOBJ(
+
+    SortedTestResults = mongo_controller.get_jsonOBJ(
         "TestResults")
     SortedTestResults = sort_by_location(SortedTestResults)
     for item in SortedTestResults:
         logger.info(item)
-        logger.info("   ")     
+        logger.info("   ")
         logger.info(SortedTestResults[item])
     logger.info("creating pdf...")
     pdf = PDF()
@@ -80,64 +79,55 @@ def create_pdf_and_upload():
     for dic in test_result_list:
         pdf.ln(10)
         for value in dic:
-             pdf.set_font('Arial', 'B', 12)
-             #pdf.set_font('Arial', 'B', 10.0)
-            #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(value)) + '-'+'  ', border=0, align='', )
-             pdf.cell(col_width, th, txt= str(value) + ':'+'  ', border=0, align='', )
-             pdf.set_font('Arial', '', 10.0)
-            # pdf.set_font('Arial', '', 10.0)            
-            #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(dic[value])), border=0, align='',)
-             pdf.cell(col_width, th, txt= str(dic[value]), border=0, align='',)
+            pdf.set_font('Arial', 'B', 12)
+            # pdf.set_font('Arial', 'B', 10.0)
+           #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(value)) + '-'+'  ', border=0, align='', )
+            pdf.cell(col_width, th, txt=str(value) +
+                     ':'+'  ', border=0, align='', )
+            pdf.set_font('Arial', '', 10.0)
+           # pdf.set_font('Arial', '', 10.0)
+           #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(dic[value])), border=0, align='',)
+            pdf.cell(col_width, th, txt=str(dic[value]), border=0, align='',)
 
-             pdf.ln(2*th)
-
+            pdf.ln(2*th)
         pdf.ln(5)
+
+    # for dic in test_result_list:
+    #     cells = pdf.multi_cell(col_width, th, txt="Placeholder text")
+    #     index=0
+    #     for value in dic:
+    #         pdf.set_font('Arial', 'B', 12)
+    #         if index >= len(cells):
+    #                 break
+    #         cell = cells[index]
+    #         cell.set_text(cell.get_text() + str(value) + ':')
+    #         pdf.set_font('Arial', '', 10.0)
+    #         cell.set_text(pdf.cell.get_text() + str(dic[value]) + '\n')
+    #         index += 1
+    #     pdf.cell(cell)
+
     pdf.add_page()
     pdf.ln(20)
     pdf.cell(80)
-    pdf.image('toker_is_a_baddy.png', 60,70, 100)
+    pdf.image('toker_is_a_baddy.png', 60, 70, 100)
 
   # creating the pdf
     pdf.output("test_report.pdf")
     logger.info("created pdf!")
     logger.info("uploading file to MinIO...")
-    # creating a client to have CRUD function with minio
-#  MinIOclient = getMinoClient()
     # creating a bucket
-    return move_pdf_2_volume()
-
-    if (not MinIOclient.bucket_exists('pdfbucket')):
-        MinIOclient.make_bucket('pdfbucket')
-    # getting the pdfs path
     path = move_pdf_2_volume()
-    try:
-        # getting pdf from container filerstream
-        with open(path, 'rb') as pdf_file:
-            # getting file size
-            statdata = os.stat(path)
-            # adding file to bucket
-            MinIOclient.put_object(
-                'pdfbucket',
-                'test_report.pdf',
-                pdf_file,
-                statdata.st_size
-            )
-    except logging.exception as indentifier:
-        return "):" + path
-    logger.info("uploaded file to MinIO")
-    logger.info(MinIOclient.get_presigned_url(
-        "GET", "pdfbucket", "test_report.pdf"))
-    return MinIOclient.get_presigned_url("GET", "pdfbucket", "test_report.pdf")
-
+    upload_pdf(file_path=path)
 
 def sort_by_location(data):
-    data= [loads(item) for item in data]   
+    data = [loads(item) for item in data]
     location_values = set([d['location'] for d in data])
     result = {location: [] for location in location_values}
 
     for d in data:
         result[d['location']].append(d)
     return result
+
 
 def on_request(ch, method, props, body):
     if body != None:
@@ -160,14 +150,20 @@ class PDF(FPDF):
         self.ln(35)
 
 
-def getMinoClient():
-    return Minio(
-        ""+str(os.getenv("MINIO_HOSTNAME"))+":9000",
-        access_key=os.getenv('MINIO_ROOT_USER'),
-        secret_key=os.getenv('MINIO_ROOT_PASSWORD'),
-        secure=False,
-        region="eu-east-1"
-    )
+def upload_pdf(file_path):
+    domain = os.getenv('file-hosting') or "file-hosting"
+    url = 'http://'+domain+'/:25478/upload?token='+os.getenv('TOKEN')
+    file = {'test_report.pdf': ('test_report.pdf', open(file_path, 'rb'))}
+    response = requests.post(url, files=file)
+
+    if response.status_code == 200:
+        result = response.json()
+        if result['ok']:
+            logger.info("File uploaded successfully. Path:", result['path'])
+        else:
+            logger.info("File upload failed.")
+    else:
+        logger.info("Request failed with status code:", response.status_code)
 
 
 def move_pdf_2_volume():

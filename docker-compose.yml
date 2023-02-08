@@ -7,7 +7,6 @@ services:
     environment:
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=example
-
     networks:
       - lan
     ports:
@@ -45,24 +44,24 @@ services:
   #     - minIO
 
 
-  minIO:
-    image: minio/minio
-    container_name: minIO
-    hostname: my_minio
-    environment:
-      - MINIO_ROOT_USER=user
-      - MINIO_ROOT_PASSWORD=password
-    expose:
-      - 9001
-      - 9000
-    volumes:
-      - /home/dev/mdata:/data
-    depends_on:
-      - rabbitmq
-    command: server /data --console-address ":9001"
-    networks:
-      - lan
-    restart: unless-stopped
+  # minIO:
+  #   image: minio/minio
+  #   container_name: minIO
+  #   hostname: my_minio
+  #   environment:
+  #     - MINIO_ROOT_USER=user
+  #     - MINIO_ROOT_PASSWORD=password
+  #   expose:
+  #     - 9001
+  #     - 9000
+  #   volumes:
+  #     - /home/dev/mdata:/data
+  #   depends_on:
+  #     - rabbitmq
+  #   command: server /data --console-address ":9001"
+  #   networks:
+  #     - lan
+  #   restart: unless-stopped
 
   controller:
     build: './controller_service'
@@ -98,16 +97,17 @@ services:
     volumes:
       - /home/dan/idf_repos/report_generator_service:/app/pdfs
     environment:
-      - MINIO_HOSTNAME=my_minio
-      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+      # - MINIO_HOSTNAME=my_minio
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672 
+      - TOKEN=c21beeafd4289e8ff916666666692333
       - RMQ_HOST=rabbitmq
       - MONGO_INITDB_ROOT_USERNAME=root
       - MONGO_INITDB_ROOT_PASSWORD=example
       - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
       - DB_NAME=DB
       - QUEUE_NAMES=pdfs
-      - MINIO_ROOT_USER=user
-      - MINIO_ROOT_PASSWORD=password
+      # - MINIO_ROOT_USER=user
+      # - MINIO_ROOT_PASSWORD=password
       # - WAIT_BEFORE=15
 
     restart: on-failure
@@ -140,6 +140,23 @@ services:
       - ME_CONFIG_MONGODB_ADMINUSERNAME=root
       - ME_CONFIG_MONGODB_ADMINPASSWORD=example
       - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
+  file-hosting:
+    image: mayth/simple-upload-server
+    hostname: file-hosting
+    depends_on:
+      - report_generator
+    command:
+      - -token
+      - c21beeafd4289e8ff916666666692333
+      - -protected_method
+      - POST,PUT,GET
+      - -upload_limit # 768 MB
+      - "805306368"
+      - -port
+      - "80" # dir in docker to use for uploads/downloads
+      - /var/data
+    volumes:
+      - /dockers/uploader:/var/data
   dozzle:
     container_name: dozzle
     image: amir20/dozzle:latest

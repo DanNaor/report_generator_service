@@ -3,6 +3,7 @@ RUN pip install pika
 RUN pip install minio
 RUN pip install pymongo
 RUN pip install fpdf
+RUN pip install requests
 WORKDIR /app
 RUN mkdir pdfs
 ADD report_generator_lib.py /app 
