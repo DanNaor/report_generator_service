@@ -111,13 +111,11 @@ def create_pdf_and_upload():
     pdf.cell(80)
     pdf.image('toker_is_a_baddy.png', 60, 70, 100)
 
-  # creating the pdf
-    pdf.output("test_report.pdf")
+  # creating the pdf in container's file system path - /app/pdfs/test_report.pdf 
+    pdf.output(name="/app/pdfs/test_report.pdf",dest= 'f')
     logger.info("created pdf!")
-    logger.info("uploading file to MinIO...")
-    # creating a bucket
-    path = move_pdf_2_volume()
-    upload_pdf(file_path=path)
+
+    return upload_pdf(file_path='/app/pdfs/test_report.pdf')
 
 def sort_by_location(data):
     data = [loads(item) for item in data]
@@ -152,24 +150,18 @@ class PDF(FPDF):
 
 def upload_pdf(file_path):
     domain = os.getenv('file-hosting') or "file-hosting"
+    logger.info(domain)
     url = 'http://'+domain+'/:25478/upload?token='+os.getenv('TOKEN')
     file = {'test_report.pdf': ('test_report.pdf', open(file_path, 'rb'))}
-    response = requests.post(url, files=file)
-
+    response =  requests.post(url=url, files=file)
     if response.status_code == 200:
         result = response.json()
+        logger.info(result)
         if result['ok']:
-            logger.info("File uploaded successfully. Path:", result['path'])
+            logger.info("File uploaded successfully. Path:"+ str(result['path']))
         else:
             logger.info("File upload failed.")
     else:
-        logger.info("Request failed with status code:", response.status_code)
+        logger.info("Request failed with status code:"+ str(response.status_code))
+    return file_path
 
-
-def move_pdf_2_volume():
-    #  move pdf to volume
-    dst_folder = "/app/pdfs"
-    src_folder = "/app"
-    file_name = "test_report.pdf"
-    if os.path.isfile(file_name):
-        return shutil.move(src_folder + '/' + file_name, dst_folder + '/' + file_name)

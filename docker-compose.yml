@@ -89,16 +89,13 @@ services:
   report_generator:
     build: './report_generator_service'
     # image: dannaor/report_generator:0.0.1
-    depends_on:
-      - mongodb
-      - rabbitmq
     container_name: report_generator
     # # only for displaying the pdf in the filesystem delete when done with dev
-    volumes:
-      - /home/dan/idf_repos/report_generator_service:/app/pdfs
+    # volumes:
+    #   - /home/dan/idf_repos/report_generator_service:/app/pdfs
     environment:
       # - MINIO_HOSTNAME=my_minio
-      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672 
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
       - TOKEN=c21beeafd4289e8ff916666666692333
       - RMQ_HOST=rabbitmq
       - MONGO_INITDB_ROOT_USERNAME=root
@@ -108,8 +105,7 @@ services:
       - QUEUE_NAMES=pdfs
       # - MINIO_ROOT_USER=user
       # - MINIO_ROOT_PASSWORD=password
-      # - WAIT_BEFORE=15
-
+      - WAIT_BEFORE=15
     restart: on-failure
     networks:
       - lan
@@ -143,8 +139,6 @@ services:
   file-hosting:
     image: mayth/simple-upload-server
     hostname: file-hosting
-    depends_on:
-      - report_generator
     command:
       - -token
       - c21beeafd4289e8ff916666666692333
@@ -157,6 +151,8 @@ services:
       - /var/data
     volumes:
       - /dockers/uploader:/var/data
+    networks:
+      - lan
   dozzle:
     container_name: dozzle
     image: amir20/dozzle:latest

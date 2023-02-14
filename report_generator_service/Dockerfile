@@ -1,9 +1,6 @@
 FROM python:3.8-slim-buster
-RUN pip install pika
-RUN pip install minio
-RUN pip install pymongo
-RUN pip install fpdf
-RUN pip install requests
+RUN apt-get update && apt-get install -y iputils-ping
+RUN pip install pika pymongo fpdf requests
 WORKDIR /app
 RUN mkdir pdfs
 ADD report_generator_lib.py /app 
