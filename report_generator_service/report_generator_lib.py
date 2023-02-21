@@ -150,18 +150,21 @@ class PDF(FPDF):
 
 def upload_pdf(file_path):
     domain = os.getenv('file-hosting') or "file-hosting"
-    logger.info(domain)
-    url = 'http://'+domain+'/:25478/upload?token='+os.getenv('TOKEN')
-    file = {'test_report.pdf': ('test_report.pdf', open(file_path, 'rb'))}
+    url = 'http://'+domain+':80/upload?token='+os.getenv('TOKEN')
+    file = {'file': ('test_report.pdf', open(file_path, 'rb'))}
     response =  requests.post(url=url, files=file)
     if response.status_code == 200:
         result = response.json()
         logger.info(result)
         if result['ok']:
+            url = 'http://'+domain+':80/files/test_report.pdf?token='+os.getenv('TOKEN')
             logger.info("File uploaded successfully. Path:"+ str(result['path']))
+            r = requests.get(url=url)
+            return  r.headers
         else:
             logger.info("File upload failed.")
+            return "File upload failed."
     else:
         logger.info("Request failed with status code:"+ str(response.status_code))
-    return file_path
+        return "Request failed with status code:"+ str(response.status_code)
 

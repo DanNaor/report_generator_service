@@ -6,6 +6,7 @@ import logging
 import uuid
 import pymongo
 from rabbitmqhandler import RabbitmqHandler
+import requests
 RMQhendler = RabbitmqHandler()
 
 
@@ -17,4 +18,6 @@ def _setup_logger():
 
 
 def create_result_instruction():
+    # url = RMQhendler.request_pdf()
+    # r= requests.get(url=url)
     return RMQhendler.request_pdf()

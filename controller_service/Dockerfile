@@ -1,7 +1,5 @@
 FROM python:3.8-slim-buster
-RUN pip install pika
-RUN pip install minio
-RUN pip install pymongo
+RUN pip install pika minio pymongo requests
 WORKDIR /app
 ADD controller.py /app 
 ADD controller_lib.py /app

@@ -140,8 +140,8 @@ services:
     image: mayth/simple-upload-server
     hostname: file-hosting
     command:
-      - -token
-      - c21beeafd4289e8ff916666666692333
+      # - -token
+      # - c21beeafd4289e8ff916666666692333
       - -protected_method
       - POST,PUT,GET
       - -upload_limit # 768 MB
