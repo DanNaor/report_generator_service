@@ -1,18 +1,14 @@
 #!/usr/local/bin/python
-# from pymongo import MongoClient
-# from minio import Minio
-# from bson.json_util import dumps
-# import pandas
 import logging
 import os
 import shutil
 import requests
-
+import datetime
 import pika
 from bson.json_util import dumps, loads
 from fpdf import FPDF
 from mongo_handler import *
-
+from minio import Minio
 
 def _setup_logger():
     logger = logging.getLogger("report_generator")
@@ -22,7 +18,12 @@ def _setup_logger():
 
 
 logger = _setup_logger()
-
+Client = Minio(
+        str(os.getenv("MINIO_HOSTNAME"))+":9000",
+        access_key=str(os.getenv("MINIO_ROOT_USER")),
+        secret_key=str(os.getenv("MINIO_ROOT_PASSWORD")),
+        secure=False,
+    )
 
 def create_pdf_and_upload():
   # get info from db
@@ -109,13 +110,13 @@ def create_pdf_and_upload():
     pdf.add_page()
     pdf.ln(20)
     pdf.cell(80)
-    pdf.image('toker_is_a_baddy.png', 60, 70, 100)
+    
+    # pdf.image('toker_is_a_baddy.png', 60, 70, 100)
 
-  # creating the pdf in container's file system path - /app/pdfs/test_report.pdf 
+  # creating the pdf in the container's file system path - /app/pdfs/test_report.pdf 
     pdf.output(name="/app/pdfs/test_report.pdf",dest= 'f')
     logger.info("created pdf!")
-
-    return upload_pdf(file_path='/app/pdfs/test_report.pdf')
+    return MinioGetPresignedURL(path='/app/pdfs/test_report.pdf')
 
 def sort_by_location(data):
     data = [loads(item) for item in data]
@@ -138,6 +139,28 @@ def on_request(ch, method, props, body):
                          body=str(response))
         ch.basic_ack(delivery_tag=method.delivery_tag)
 
+def MinioGetPresignedURL(path):
+    # Make 'pdfs' bucket if not exist.
+    found = Client.bucket_exists("pdfs")
+    if not found:
+        Client.make_bucket("pdfs")
+    else:
+        logger.info("Bucket 'pdfs' already exists")
+    # Upload 'test_report' as object name
+    # 'test_report.pdf' to bucket 'pdfs'.
+    Client.fput_object(
+        "pdfs", "test_report.pdf", path,
+    )
+    logger.info("file uploaded")
+    logger.info("creating url...")
+    url = Client.get_presigned_url(
+    "GET",
+    "pdfs",
+    "test_report.pdf",
+    expires=datetime.timedelta(days=1),
+    )
+    logger.info("created url-"+url)
+    return url
 
 class PDF(FPDF):
     def header(self):
@@ -146,25 +169,3 @@ class PDF(FPDF):
         # Arial bold 15
         self.set_font('Arial', 'B', 15)
         self.ln(35)
-
-
-def upload_pdf(file_path):
-    domain = os.getenv('file-hosting') or "file-hosting"
-    url = 'http://'+domain+':80/upload?token='+os.getenv('TOKEN')
-    file = {'file': ('test_report.pdf', open(file_path, 'rb'))}
-    response =  requests.post(url=url, files=file)
-    if response.status_code == 200:
-        result = response.json()
-        logger.info(result)
-        if result['ok']:
-            url = 'http://'+domain+':80/files/test_report.pdf?token='+os.getenv('TOKEN')
-            logger.info("File uploaded successfully. Path:"+ str(result['path']))
-            r = requests.get(url=url)
-            return  r.headers
-        else:
-            logger.info("File upload failed.")
-            return "File upload failed."
-    else:
-        logger.info("Request failed with status code:"+ str(response.status_code))
-        return "Request failed with status code:"+ str(response.status_code)
-
