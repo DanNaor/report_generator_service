@@ -1,7 +1,6 @@
 #!/usr/local/bin/python
 import logging
 import os
-import shutil
 import requests
 
 import pika
