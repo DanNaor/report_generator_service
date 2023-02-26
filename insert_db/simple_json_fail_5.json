@@ -1,8 +1,0 @@
-{
-	"type": "DLEP",
-	"location": "/path/to/tdf/3",
-	"name": "Check if the signal Peer_Offer includes data item Peer_Type",
-	"test": "EXPECT OID 1.3.6.1.4.1.8073.1.1.4.0 TO_BE SETTABLE OF_TYPE INTEGER",
-	"result": "failed"
-  }
-  
