@@ -1,13 +1,12 @@
 version: "3.8"
 services:
   mongodb:
-    image : mongo:latest
+    image: mongo:latest
     container_name: mongodb
     hostname: my_mongo
     environment:
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
     networks:
       - lan
     ports:
@@ -15,11 +14,6 @@ services:
     depends_on:
       - rabbitmq
     restart: unless-stopped
-  
-
-
-
-
 
   rabbitmq:
     image: rabbitmq:3-management
@@ -37,117 +31,61 @@ services:
     networks:
       - lan
 
-
-
-# not sure if needed 
-  # nginx:
-  #   image: nginx:1.19.2-alpine
-  #   hostname: nginx
-  #   volumes:
-  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
-  #   ports:
-  #     - "9000:9000"
-  #     - "9001:9001"
-  #   depends_on:
-  #     - minIO
-
-
-  minIO:
-    image:  minio/minio
-    container_name  : minIO
-    hostname: my_minio
-    environment:
-      - MINIO_ROOT_USER=user
-      - MINIO_ROOT_PASSWORD=password
-    expose:
-      - 9001
-      - 9000
-    volumes:
-      - /home/dev/mdata:/data
-    depends_on:
-      - rabbitmq
-    command: server /data --console-address ":9001"
-    networks:
-      - lan
-    restart: unless-stopped
-  
-
-
-
-
   controller:
-   build: './controller_service'
-   container_name: controller
-  #  command: sh -c "/wait /controller.py"
-   depends_on:
-      - rabbitmq
-      - mongodb
-   environment:
-     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672 
-     - RMQ_HOST=rabbitmq
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
-     - QUEUE_NAMES=updates,results,pdfs,setup_ready
-     - WAIT_BEFORE=15
-   restart: on-failure
-  #  stdin_open: true # docker run -i
-  #  tty: true        # docker run -t
-  #  restart: unless-stopped
-   networks:
-    - lan
-
-
-
-
-
-  report_generator:
-    # build: './report_generator_service'
-    image: dannaor/report_generator:0.0.1
-    depends_on:
-      - mongodb
-      - rabbitmq
-    container_name: report_generator
-    # # only for displaying the pdf in the filesystem delete when done with dev
-    # volumes:
-    #   - /home/dan/report_generator_service:/app/pdfs
+    build: './controller_service'
+    container_name: controller
+    #  command: sh -c "/wait /controller.py"
     environment:
-     - MINIO_HOSTNAME=my_minio
-     - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
-     - RMQ_HOST=rabbitmq
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
-     - QUEUE_NAMES=pdfs
-     - MINIO_ROOT_USER=user
-     - MINIO_ROOT_PASSWORD=password
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+      - RMQ_HOST=rabbitmq
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
+      - QUEUE_NAMES=updates,results,pdfs,setup_ready
+      - WAIT_BEFORE=15
     restart: on-failure
     networks:
       - lan
 
-
-
-
-
-
+  report_generator:
+    build: './report_generator_service'
+    # image: dannaor/report_generator:0.0.1
+    # container_name: report_generator
+    hostname: report_generator
+    # # only for displaying the pdf in the filesystem delete when done with dev
+    # volumes:
+    #   - /home/dan/idf_repos/report_generator_service:/app/pdfs
+    environment:
+      # - MINIO_HOSTNAME=my_minio
+      - WAIT_HOSTS=my_mongo:27017,rabbitmq:5672
+      - TOKEN=c21beeafd4289e8ff916666666692333
+      - RMQ_HOST=rabbitmq
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
+      - QUEUE_NAMES=pdfs
+      # - MINIO_ROOT_USER=user
+      # - MINIO_ROOT_PASSWORD=password
+      - WAIT_BEFORE=10 
+    ports:
+      - "6969:6969"
+    restart: on-failure
+    networks:
+      - lan
 
   insert_db:
     build: './insert_db'
-    environment:        
-     - WAIT_HOSTS=my_mongo:27017
-     - MONGO_INITDB_ROOT_USERNAME=root
-     - MONGO_INITDB_ROOT_PASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-     - DB_NAME=DB
+    environment:
+      - WAIT_HOSTS=my_mongo:27017
+      - MONGO_INITDB_ROOT_USERNAME=root
+      - MONGO_INITDB_ROOT_PASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+      - DB_NAME=DB
     networks:
       - lan
     container_name: insert_db
-    
-
-
-
 
   mongo-express:
     image: mongo-express
@@ -157,18 +95,36 @@ services:
     depends_on:
       - rabbitmq
       - mongodb
-    networks: 
+    networks:
       - lan
     environment:
-     - ME_CONFIG_MONGODB_ADMINUSERNAME=root
-     - ME_CONFIG_MONGODB_ADMINPASSWORD=example
-     - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
-
-
-
-
-
-
+      - ME_CONFIG_MONGODB_ADMINUSERNAME=root
+      - ME_CONFIG_MONGODB_ADMINPASSWORD=example
+      - ME_CONFIG_MONGODB_URL=mongodb://root:example@my_mongo:27017/
+  file-hosting:
+    image: mayth/simple-upload-server
+    hostname: file-hosting
+    command:
+      - -token
+      - c21beeafd4289e8ff916666666692333
+      - -protected_method
+      - POST,PUT,GET
+      - -upload_limit # 768 MB
+      - "805306368"
+      - -port
+      - "80" # dir in docker to use for uploads/downloads
+      - /var/data
+    volumes:
+      - /dockers/uploader:/var/data
+    networks:
+      - lan
+  dozzle:
+    container_name: dozzle
+    image: amir20/dozzle:latest
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - 8080:8080
 networks:
   lan:
     driver: bridge
