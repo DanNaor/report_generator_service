@@ -1,8 +1,4 @@
 #!/usr/local/bin/python
-# from pymongo import MongoClient
-# from minio import Minio
-# from bson.json_util import dumps
-# import pandas
 import logging
 import os
 import shutil
@@ -14,6 +10,7 @@ from fpdf import FPDF
 from mongo_handler import *
 
 
+
 def _setup_logger():
     logger = logging.getLogger("report_generator")
     logger.addHandler(logging.StreamHandler())
@@ -22,7 +19,6 @@ def _setup_logger():
 
 
 logger = _setup_logger()
-
 
 def create_pdf_and_upload():
   # get info from db
@@ -37,10 +33,10 @@ def create_pdf_and_upload():
     SortedTestResults = mongo_controller.get_jsonOBJ(
         "TestResults")
     SortedTestResults = sort_by_location(SortedTestResults)
-    for item in SortedTestResults:
-        logger.info(item)
-        logger.info("   ")
-        logger.info(SortedTestResults[item])
+    # for item in SortedTestResults:
+    #     logger.info(item)
+    #     logger.info("   ")
+    #     logger.info(SortedTestResults[item])
     logger.info("creating pdf...")
     pdf = PDF()
   #  config page
@@ -57,7 +53,7 @@ def create_pdf_and_upload():
     # evenly across table and page
     col_width = epw/3
     th = pdf.font_size
-  # iterating throught the json file to display the data in the pdf file ,skipping the first field (id)
+  # iterating thought the json file to display the data in the pdf file ,skipping the first field (id)
     for row in test_config_json:
         pdf.set_font('Arial', 'I', 12)
         pdf.cell(col_width, th, txt=str(row), border=0, )
@@ -74,7 +70,7 @@ def create_pdf_and_upload():
     pdf.set_font('Courier', 'B', 15)
     pdf.cell(30, 10, 'Tests:', 1, 0, 'C')
     pdf.ln(10)
-    # iterating throught the list and displaying the test separately with space between them
+    # iterating thought the list and displaying the test separately with space between them
     pdf.set_font('Arial', '', 10.0)
     for dic in test_result_list:
         pdf.ln(10)
@@ -106,10 +102,7 @@ def create_pdf_and_upload():
     #         index += 1
     #     pdf.cell(cell)
 
-    pdf.add_page()
-    pdf.ln(20)
-    pdf.cell(80)
-    pdf.image('toker_is_a_baddy.png', 60, 70, 100)
+   
 
   # creating the pdf in container's file system path - /app/pdfs/test_report.pdf 
     pdf.output(name="/app/pdfs/test_report.pdf",dest= 'f')
@@ -129,7 +122,7 @@ def sort_by_location(data):
 
 def on_request(ch, method, props, body):
     if body != None:
-        logger.info("im in request")
+        logger.info("sent RPC")
         response = create_pdf_and_upload()
         ch.basic_publish(exchange='',
                          routing_key=props.reply_to,
@@ -149,22 +142,25 @@ class PDF(FPDF):
 
 
 def upload_pdf(file_path):
+    logger.info("creating a http request")
     domain = os.getenv('file-hosting') or "file-hosting"
     url = 'http://'+domain+':80/upload?token='+os.getenv('TOKEN')
     file = {'file': ('test_report.pdf', open(file_path, 'rb'))}
     response =  requests.post(url=url, files=file)
     if response.status_code == 200:
         result = response.json()
-        logger.info(result)
         if result['ok']:
             url = 'http://'+domain+':80/files/test_report.pdf?token='+os.getenv('TOKEN')
             logger.info("File uploaded successfully. Path:"+ str(result['path']))
             r = requests.get(url=url)
-            return  r.headers
+            if(r.ok):
+                logger.info("GET request working ")
+                return  url
+            else:
+                logger("something went wrong with GET request -"+ r.status_code)
         else:
             logger.info("File upload failed.")
             return "File upload failed."
     else:
         logger.info("Request failed with status code:"+ str(response.status_code))
         return "Request failed with status code:"+ str(response.status_code)
-
