@@ -1,0 +1,2 @@
+export DOCKER_USERNAME=dannaor
+export DOCKER_PASSWORD=yrah22155
