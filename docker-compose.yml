@@ -19,28 +19,6 @@ services:
         ports:
             - 3095:3095
 
-    controller:
-        image: yuvaltoker/controller-stub:0.0.8
-        networks:
-            - lan
-        environment:
-            - RMQ_HOST=rabbitmq
-            - QUEUE_NAMES=tests_list,setup_ready,results,all_results_ready,pdfs,pdf_ready
-            - MONGO_INITDB_ROOT_USERNAME=root
-            - MONGO_INITDB_ROOT_PASSWORD=example
-            - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-            - DB_NAME=rri
-            - TIME_DELAY=1
-            - WAIT_HOSTS=rabbitmq:5672,mongodb:27017
-            - PRIV_PASS=yuval12345
-            - AUTH_PASS=yuval12321
-            - USER_NAME=mynewuser
-            - STATE=testing
-            # STATE is for distiguishing between 'testing' state and 'production' state, and its purpose is  
-            # to know where the snmpd is located, in snmpd container (when testing), or on the ip address of the modem (when on production)
-        volumes:
-            - /home/dan/idf_repos/tests/tests:/tests
-
 
     router:
         image: yuvaltoker/adjusted-dlep:1.3.2
@@ -117,10 +95,32 @@ services:
             stdin_open: true
 
 
+    controller:
+        image: yuvaltoker/controller-stub:0.0.8
+        networks:
+            - lan
+        environment:
+            - RMQ_HOST=rabbitmq
+            - QUEUE_NAMES=tests_list,setup_ready,results,all_results_ready,pdfs,pdf_ready
+            - MONGO_INITDB_ROOT_USERNAME=root
+            - MONGO_INITDB_ROOT_PASSWORD=example
+            - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
+            - DB_NAME=rri
+            - TIME_DELAY=1
+            - WAIT_HOSTS=rabbitmq:5672,mongodb:27017
+            - PRIV_PASS=yuval12345
+            - AUTH_PASS=yuval12321
+            - USER_NAME=mynewuser
+            - STATE=testing
+            # STATE is for distiguishing between 'testing' state and 'production' state, and its purpose is  
+            # to know where the snmpd is located, in snmpd container (when testing), or on the ip address of the modem (when on production)
+        volumes:
+            - /home/dan/idf_repos/tests/tests:/tests
+
     report_generator:
     # version 0.0.1 is working but notice on dockerhub for latest version 
         # image: dannaor/rg:0.0.1 
-        build: ./report_generator
+        build: ./report_generator_service
         # container_name: report_generator
         hostname: report_generator
         # # only for displaying the pdf in the filesystem delete when done with dev
@@ -134,7 +134,7 @@ services:
         - MONGO_INITDB_ROOT_USERNAME=root
         - MONGO_INITDB_ROOT_PASSWORD=example
         - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
-        - DB_NAME=DB
+        - DB_NAME=rri
         - QUEUE_NAMES=pdfs
         # - MINIO_ROOT_USER=user
         # - MINIO_ROOT_PASSWORD=password
