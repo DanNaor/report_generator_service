@@ -1,5 +1,5 @@
 #!/bin/bash
-
+source mycredentials.sh
 # Get the current version from pyproject.toml
 CURRENT_VERSION=$(python3 -m poetry version | awk '{print $NF}')
 PROJECT_NAME=$(poetry version | awk '{print $1}')
@@ -20,10 +20,10 @@ if [[ "$VERSION_TYPE" == "major" ]]; then
     MAJOR=$((MAJOR+1))
     MINOR=0
     PATCH=0
-elif [[ "$VERSION_TYPE" == "minor" ]]; then
+    elif [[ "$VERSION_TYPE" == "minor" ]]; then
     MINOR=$((MINOR+1))
     PATCH=0
-elif [[ "$VERSION_TYPE" == "patch" ]]; then
+    elif [[ "$VERSION_TYPE" == "patch" ]]; then
     PATCH=$((PATCH+1))
 else
     echo "Invalid version type"
@@ -39,6 +39,9 @@ poetry version "$NEW_VERSION"
 
 # Build the Docker image
 docker build -t dannaor/rg:$NEW_VERSION .
+
+# for dockerhub authentication
+docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 
 # Push the Docker image to Docker Hub
 docker push dannaor/rg:$NEW_VERSION
