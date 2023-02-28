@@ -1,2 +1,3 @@
 rabbitmq/
 test_report.pdf
+/report_generator_service/report_generator_service/mycredentials.sh

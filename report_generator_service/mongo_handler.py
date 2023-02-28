@@ -1,8 +1,7 @@
 from json import encoder
-from pymongo import MongoClient
+from pymongo import MongoClient 
 import pprint
 import os
-from bson.json_util import loads, dumps
 
 
 class MongodbHandler:

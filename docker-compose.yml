@@ -121,13 +121,11 @@ services:
     # version 0.0.1 is working but notice on dockerhub for latest version 
         # image: dannaor/rg:0.0.1 
         build: ./report_generator_service
-        # container_name: report_generator
         hostname: report_generator
         # # only for displaying the pdf in the filesystem delete when done with dev
         # volumes:
         #   - /home/USER/exampledir:/app/pdfs
         environment:
-        # - MINIO_HOSTNAME=my_minio
         - WAIT_HOSTS=mongodb:27017,rabbitmq:5672
         - TOKEN=c21beeafd4289e8ff916666666692333
         - RMQ_HOST=rabbitmq
@@ -136,9 +134,6 @@ services:
         - ME_CONFIG_MONGODB_URL=mongodb://root:example@mongodb:27017/
         - DB_NAME=rri
         - QUEUE_NAMES=pdfs
-        # - MINIO_ROOT_USER=user
-        # - MINIO_ROOT_PASSWORD=password
-        - WAIT_BEFORE=10 
         ports:
         - "6969:6969"
         restart: on-failure

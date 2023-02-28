@@ -1,4 +1,6 @@
 #!/bin/bash
+
+# in order to use this script mycredentials.sh and enter dockerhub's credentials 
 source mycredentials.sh
 # Get the current version from pyproject.toml
 CURRENT_VERSION=$(python3 -m poetry version | awk '{print $NF}')
@@ -37,13 +39,13 @@ NEW_VERSION="$MAJOR.$MINOR.$PATCH"
 # Update the version number in pyproject.toml
 poetry version "$NEW_VERSION"
 
-# Build the Docker image
+# Build the Docker image !!NOTICE REPOS NAME!!
 docker build -t dannaor/rg:$NEW_VERSION .
 
 # for dockerhub authentication
 docker login -u "$DOCKER_USERNAME" -p "$DOCKER_PASSWORD"
 
-# Push the Docker image to Docker Hub
+# Push the Docker image to Docker Hub !!NOTICE REPOS NAME!!
 docker push dannaor/rg:$NEW_VERSION
 
 # Revert the version number in pyproject.toml

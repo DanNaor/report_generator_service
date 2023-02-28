@@ -4,7 +4,6 @@ import os
 import requests
 
 import pika
-from bson.json_util import dumps, loads
 from fpdf import FPDF
 from mongo_handler import *
 
@@ -29,9 +28,9 @@ def create_pdf_and_upload():
     test_result_list = mongo_controller.get_all_documents_in_list(
         "TestResults")
 
-    SortedTestResults = mongo_controller.get_jsonOBJ(
-        "TestResults")
-    SortedTestResults = sort_by_location(SortedTestResults)
+    # SortedTestResults = mongo_controller.get_jsonOBJ(
+    #     "TestResults")
+    # SortedTestResults = sort_by_location(SortedTestResults)
     # for item in SortedTestResults:
     #     logger.info(item)
     #     logger.info("   ")
@@ -141,25 +140,27 @@ class PDF(FPDF):
 
 
 def upload_pdf(file_path):
-    logger.info("creating a http request")
+    logger.info("Uploading file to file hosting service and creating a URL...")
     domain = os.getenv('file-hosting') or "file-hosting"
-    url = 'http://'+domain+':80/upload?token='+os.getenv('TOKEN')
-    file = {'file': ('test_report.pdf', open(file_path, 'rb'))}
-    response =  requests.post(url=url, files=file)
+    url = f'http://{domain}:80/upload?token={os.getenv("TOKEN")}'
+    with open(file_path, 'rb') as f:
+        files = {'file': ('test_report.pdf', f)}
+        response = requests.post(url, files=files)
     if response.status_code == 200:
         result = response.json()
-        if result['ok']:
-            url = 'http://'+domain+':80/files/test_report.pdf?token='+os.getenv('TOKEN')
-            logger.info("File uploaded successfully. Path:"+ str(result['path']))
-            r = requests.get(url=url)
-            if(r.ok):
-                logger.info("GET request working ")
-                return  url
+        if result.get('ok'):
+            url = f'http://{domain}:80/files/test_report.pdf?token={os.getenv("TOKEN")}'
+            logger.info("File uploaded successfully")
+            r = requests.get(url)
+            if r.ok:
+                logger.info("GET request successful")
+                logger.info("Sending URL to controller")
+                return url
             else:
-                logger("something went wrong with GET request -"+ r.status_code)
+                logger.error(f"Something went wrong with GET request - {r.status_code}")
         else:
             logger.info("File upload failed.")
             return "File upload failed."
     else:
-        logger.info("Request failed with status code:"+ str(response.status_code))
-        return "Request failed with status code:"+ str(response.status_code)
+        logger.error(f"Request failed with status code: {response.status_code}")
+        return f"Request failed with status code: {response.status_code}"
