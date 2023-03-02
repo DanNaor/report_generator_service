@@ -1,9 +1,16 @@
 version: '3'
 services: 
+    api-gateway:
+        hostname: gateway
+        image: samyon196/rri-gateway:1.0.6
+        networks:
+            - lan
+        ports:
+            - 80:80
+
     app-fe:
         hostname: app-frontend
-        image: samyon196/rri-app-fe:0.1.7
-           
+        image: samyon196/rri-app-fe:0.1.12
         networks:
             - lan
         ports:
@@ -11,14 +18,13 @@ services:
 
     app-be:
         hostname: app-backend
-        image: samyon196/rri-app-be:0.1.11
+        image: samyon196/rri-app-be:0.1.12
         environment:
             WAIT_HOSTS: rabbitmq:5672, mongodb:27017
         networks:
             - lan
         ports:
             - 3095:3095
-
 
     router:
         image: yuvaltoker/adjusted-dlep:1.3.2
@@ -119,12 +125,13 @@ services:
 
     report_generator:
     # version 0.0.1 is working but notice on dockerhub for latest version 
-        # image: dannaor/rg:0.0.1 
-        build: ./report_generator_service
+        # image: dannaor/rg:0.0.1 \
+        container_name: report_generator
+        build: ./rg
         hostname: report_generator
-        # # only for displaying the pdf in the filesystem delete when done with dev
-        # volumes:
-        #   - /home/USER/exampledir:/app/pdfs
+        # only for displaying the pdf in the filesystem delete when done with dev
+        volumes:
+          - /home/dan/idf_repos/report_generator_service:/app/pdfs
         environment:
         - WAIT_HOSTS=mongodb:27017,rabbitmq:5672
         - TOKEN=c21beeafd4289e8ff916666666692333
@@ -137,6 +144,7 @@ services:
         ports:
         - "6969:6969"
         restart: on-failure
+        # command: tail -F anything
         networks:
         - lan
         

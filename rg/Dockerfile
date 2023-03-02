@@ -1,10 +1,11 @@
 FROM python:3.8-slim-buster
 
 LABEL  maintainer="Dan Naor dannaor2001@gmail.com"
-LABEL description="A short description of what this image does."
+LABEL description="a micro-service that creates a pdf with the results of the tests"
 WORKDIR /app
 # Install Poetry and dependencies
 COPY pyproject.toml .
+COPY poetry.lock .
 RUN pip install --upgrade pip && \
     pip install poetry && \
     poetry config virtualenvs.create false && \
@@ -14,10 +15,8 @@ RUN pip install --upgrade pip && \
 RUN mkdir pdfs
 
 # Copy source code
-COPY report_generator_lib.py \
-     report_generator.py \
-     mongo_handler.py \
-     Hatal_logo.png \
+COPY src \
+     assets \
      wait \
      /app/
 

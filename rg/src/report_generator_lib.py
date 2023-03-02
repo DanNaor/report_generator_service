@@ -2,8 +2,8 @@
 import logging
 import os
 import requests
-
 import pika
+
 from fpdf import FPDF
 from mongo_handler import *
 
@@ -28,15 +28,18 @@ def create_pdf_and_upload():
     test_result_list = mongo_controller.get_all_documents_in_list(
         "TestResults")
 
-    # SortedTestResults = mongo_controller.get_jsonOBJ(
-    #     "TestResults")
-    # SortedTestResults = sort_by_location(SortedTestResults)
+    SortedTestResults = mongo_controller.get_collection_sorted(
+        "TestResults")
+    logger.info(SortedTestResults)
     # for item in SortedTestResults:
     #     logger.info(item)
     #     logger.info("   ")
     #     logger.info(SortedTestResults[item])
     logger.info("creating pdf...")
     pdf = PDF()
+
+
+
   #  config page
     pdf.add_page()
     pdf.cell(80)
@@ -58,7 +61,9 @@ def create_pdf_and_upload():
         pdf.set_font('Arial', '', 10.0)
         pdf.cell(col_width, th, txt=str(test_config_json[row]), border=0, )
         pdf.ln(2*th)
-    # islice(test_config_json,1,None)
+
+
+
 
   # tests page
     pdf.add_page()
@@ -74,15 +79,9 @@ def create_pdf_and_upload():
         pdf.ln(10)
         for value in dic:
             pdf.set_font('Arial', 'B', 12)
-            # pdf.set_font('Arial', 'B', 10.0)
-           #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(value)) + '-'+'  ', border=0, align='', )
-            pdf.cell(col_width, th, txt=str(value) +
-                     ':'+'  ', border=0, align='', )
+            pdf.cell(col_width, th, txt=str(value) +':'+'  ', border=0, align='', )
             pdf.set_font('Arial', '', 10.0)
-           # pdf.set_font('Arial', '', 10.0)
-           #  pdf.cell(col_width, th, txt=re.sub(r"(\w)([A-Z])", r"\1 \2", str(dic[value])), border=0, align='',)
             pdf.cell(col_width, th, txt=str(dic[value]), border=0, align='',)
-
             pdf.ln(2*th)
         pdf.ln(5)
 
