@@ -28,11 +28,6 @@ def create_pdf_and_upload():
     test_result_list = mongo_controller.get_documents_by_location(
         "TestResults")
 
-    logger.info(test_result_list)
-    # for item in SortedTestResults:
-    #     logger.info(item)
-    #     logger.info("   ")
-    #     logger.info(SortedTestResults[item])
     logger.info("creating pdf...")
     pdf = PDF()
 
@@ -73,19 +68,36 @@ def create_pdf_and_upload():
     pdf.ln(10)
     # iterating thought the list and displaying the test separately with space between them
     pdf.set_font('Courier', '', 10.0)
-    for location_array in test_result_list:
-         pdf.set_font('Courier', 'B', 15)
-         pdf.cell(w= 0, h= 10,txt= location_array[1]["location"], border= 'B', ln = 0, align= 'C')
-         pdf.ln(10)
-         for test in location_array:
-             pdf.ln(10)
-             for value in test:
-                pdf.set_font('Courier', 'B', 12)
-                pdf.cell(col_width, th, txt=str(value) +':'+'  ', border=0, align='', )
-                pdf.set_font('Courier', '', 10.0)
-                pdf.cell(col_width, th, txt=str(test[value]), border=0, align='',)
-                pdf.ln(2*th)
-             pdf.ln(5)
+    i=0
+    for i, location_array in enumerate(test_result_list):
+        pdf.set_font('Courier', 'B', 15)
+        pdf.cell(w=0, h=10, txt=location_array[1]["location"], border='B', ln=0, align='C')
+        pdf.ln(10)
+        pdf.set_font('Courier', '', 12)
+        for test in location_array:
+            pdf.ln(10)
+            cell_text=""
+            for key, value in test.items():
+                cell_text += f"{key}: {value}"+"\n"            
+
+            text_width = pdf.get_string_width(cell_text)
+            # Get the available width and height on the current page
+            available_width = pdf.w - pdf.r_margin - pdf.l_margin
+            available_height = pdf.h - pdf.b_margin - pdf.t_margin - pdf.get_y() 
+            logger.info("text_width w="+str(text_width)+" available_height="+str(available_height)+" available_width="+str(available_width))
+            if text_width <= available_width and pdf.get_y() + 2*th <= available_height:
+                pdf.add_page()
+                pdf.ln(5)
+                pdf.multi_cell(0, th*2, txt=cell_text, border=0, align='L')
+            else:
+                pdf.multi_cell(0, th*2, txt=cell_text, border=0, align='L')
+                pdf.ln(5)
+                    
+        if i<len(test_result_list)-1:
+            pdf.add_page()
+        
+
+
 
     # for dic in test_result_list:
     #     pdf.ln(10)
@@ -119,14 +131,7 @@ def create_pdf_and_upload():
 
     return upload_pdf(file_path='/app/pdfs/test_report.pdf')
 
-def sort_by_location(data):
-    data = [json.d(item) for item in data]
-    location_values = set([d['location'] for d in data])
-    result = {location: [] for location in location_values}
-
-    for d in data:
-        result[d['location']].append(d)
-    return result
+# def check_enough_space()
 
 
 def on_request(ch, method, props, body):
