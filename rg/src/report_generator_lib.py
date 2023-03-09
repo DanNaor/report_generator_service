@@ -58,80 +58,92 @@ def create_pdf_and_upload():
 
 
 
-  # tests page
+    # Create a new page for displaying the tests
     pdf.add_page()
-    # moving title to the middle of the file
+
+    # Move the text cursor to the center of the page
     pdf.cell(80)
-    # displaying title
+
+    # Set the font and display the title "Tests"
     pdf.set_font('Courier', 'B', 15)
     pdf.cell(30, 10, 'Tests:', 1, 0, 'C')
+
+    # Add a new line for spacing
     pdf.ln(10)
-    # iterating thought the list and displaying the test separately with space between them
+
+    # Set the font and iterate through the list of test results
     pdf.set_font('Courier', '', 10.0)
-    i=0
+    i = 0
     for i, location_array in enumerate(test_result_list):
+        
+        # Set the font to bold and display the location of the tests
         pdf.set_font('Courier', 'B', 15)
         pdf.cell(w=0, h=10, txt=location_array[1]["location"], border='B', ln=0, align='C')
         pdf.ln(10)
+        
+        # Set the font to normal and display each test's information on separate lines
         pdf.set_font('Courier', '', 12)
         for test in location_array:
             pdf.ln(10)
-            cell_text=""
+            cell_text = ""
             for key, value in test.items():
-                cell_text += f"{key}: {value}"+"\n"            
-
-            text_width = pdf.get_string_width(cell_text)
-            # Get the available width and height on the current page
-            available_width = pdf.w - pdf.r_margin - pdf.l_margin
-            available_height = pdf.h - pdf.b_margin - pdf.t_margin - pdf.get_y() 
-            logger.info("text_width w="+str(text_width)+" available_height="+str(available_height)+" available_width="+str(available_width))
-            if text_width <= available_width and pdf.get_y() + 2*th <= available_height:
-                pdf.add_page()
-                pdf.ln(5)
-                pdf.multi_cell(0, th*2, txt=cell_text, border=0, align='L')
-            else:
-                pdf.multi_cell(0, th*2, txt=cell_text, border=0, align='L')
-                pdf.ln(5)
-                    
-        if i<len(test_result_list)-1:
-            pdf.add_page()
+                cell_text += f"{key}: {value}" + "\n"       
+            pdf.multi_cell(0, th*2, txt=cell_text, border=0, align='L')
+            pdf.ln(5)
         
+        # If this is the last set of tests, add a new page for the next set of tests
+        if is_last(test_result_list, i):
+            pdf.add_page()
 
+    pdf.add_page()
+    # setting the font to Courier, bold, and size 15
+    pdf.set_font('Courier', 'B', 15)
+    # adding a cell with a border and center alignment containing the title "statistics"
+    pdf.cell(0, th*2, 'statistics:', 1, 0, 'C')
+    # moving to a new line
+    pdf.ln(10)
+    # getting statistics from the test_result_list using the get_stats function
+    stats=get_stats(test_results=test_result_list)
+    # adding a cell with the amount of failed tests using the "num_fail" key in the stats dictionary
+    pdf.cell(0,th*2,txt="amount of failed tests- "+str(stats["num_fail"]),ln=10,align='L')
+    # adding a cell with the amount of passed tests using the "num_pass" key in the stats dictionary
+    pdf.cell(0,th*2,txt="amount of passed tests- "+str(stats["num_pass"]),ln=10,align='L')
+    # adding a cell with the amount of types (unique locations) using the length of the "unique_locations" list in the stats dictionary
+    pdf.cell(0,th*2,txt="amount of types- "+str(len(stats["unique_locations"])),ln=10,align='L')
+    # adding a multi-cell with the types of tests using the "unique_locations" list in the stats dictionary, with a line break between each value
+    pdf.multi_cell(0,th*2,txt="types of test-\n"+"\n".join(stats['unique_locations']))
 
-
-    # for dic in test_result_list:
-    #     pdf.ln(10)
-    #     for value in dic:
-    #         pdf.set_font('Courier', 'B', 12)
-    #         pdf.cell(col_width, th, txt=str(value) +':'+'  ', border=0, align='', )
-    #         pdf.set_font('Courier', '', 10.0)
-    #         pdf.cell(col_width, th, txt=str(dic[value]), border=0, align='',)
-    #         pdf.ln(2*th)
-    #     pdf.ln(5)
-
-    # for dic in test_result_list:
-    #     cells = pdf.multi_cell(col_width, th, txt="Placeholder text")
-    #     index=0
-    #     for value in dic:
-    #         pdf.set_font('Courier', 'B', 12)
-    #         if index >= len(cells):
-    #                 break
-    #         cell = cells[index]
-    #         cell.set_text(cell.get_text() + str(value) + ':')
-    #         pdf.set_font('Courier', '', 10.0)
-    #         cell.set_text(pdf.cell.get_text() + str(dic[value]) + '\n')
-    #         index += 1
-    #     pdf.cell(cell)
-
-   
-
-  # creating the pdf in container's file system path - /app/pdfs/test_report.pdf 
+    # creating the pdf in container's file system path - /app/pdfs/test_report.pdf 
     pdf.output(name="/app/pdfs/test_report.pdf",dest= 'f')
+    
     logger.info("created pdf!")
-
+    # returning the uploaded pdf file
     return upload_pdf(file_path='/app/pdfs/test_report.pdf')
 
-# def check_enough_space()
+def is_last(test_result_list, i):
+    return i<len(test_result_list)-1
+
+def get_stats(test_results):
+    # Initialize counters
+    num_fail = 0
+    num_pass = 0
+    unique_locations = set()
+
+    # Iterate over the documents and update counters and set of unique locations
+    for location_array in test_results:
+        for document in location_array:
+            if document.get("result") == "Fail":
+                num_fail += 1
+            elif document.get("result") == "Pass":
+                num_pass += 1
+
+            unique_locations.add(str(document.get("location")))
+
+    # Return the counters and set of unique locations
+    return {"num_fail": num_fail, "num_pass": num_pass, "unique_locations": unique_locations}
+
+    
+
 
 
 def on_request(ch, method, props, body):
