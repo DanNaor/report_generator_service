@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "RG"
-version = "0.0.2"
+version = "0.0.4"
 description = ""
 authors = []
 
@@ -10,7 +10,6 @@ pymongo = "^4.0.1"
 requests = "^2.26.0"
 pika = "^1.2.0"
 fpdf = "^1.7.2"
-
 [tool.poetry.dev-dependencies]
 
 [build-system]

@@ -1,6 +1,17 @@
 #!/bin/bash
 
-# in order to use this script mycredentials.sh and enter dockerhub's credentials 
+#description-
+#This Bash script automates the process of versioning, building, and pushing a Docker
+#image to Docker Hub. It reads the current version number from pyproject.toml, prompts
+#the user to choose the version component to increment (major, minor, or patch),
+# increments the version number accordingly, updates pyproject.toml, builds a Docker
+# image with the new version number, logs in to Docker Hub using credentials stored in a
+# separate shell script, pushes the Docker image to Docker Hub, and finally reverts the
+# version number in pyproject.toml back to the original version number. This script can save
+# time and reduce the chance of errors when deploying new versions of the software.
+
+
+# in order to use this script mycredentials.sh and enter dockerhub's credentials
 source mycredentials.sh
 # Get the current version from pyproject.toml
 CURRENT_VERSION=$(python3 -m poetry version | awk '{print $NF}')
